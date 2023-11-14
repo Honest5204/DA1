@@ -26,9 +26,8 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
-        binding.menu.setOnClickListener(view -> {
-            binding.drawerLayout.openDrawer(GravityCompat.START);
-        });
+        binding.menu.setOnClickListener(v -> binding.drawerLayout.openDrawer(GravityCompat.START));
+
         getSupportFragmentManager().beginTransaction().replace(R.id.fame, new trangchu()).commit();
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         binding.nav.setNavigationItemSelectedListener(item -> {
