@@ -3,11 +3,21 @@
 
     <item
         android:id="@+id/lichsu"
-        android:title="Nội dung đã nghe"
-        android:icon="@drawable/baseline_access_time_24" />
+        android:icon="@drawable/baseline_access_time_24"
+        android:title="Nội dung đã nghe" />
 
     <item
         android:id="@+id/caidat"
-        android:title="Cài đặt"
-        android:icon="@drawable/baseline_settings_24" />
+        android:icon="@drawable/baseline_settings_24"
+        android:title="Cài đặt" />
+
+    <item
+        android:id="@+id/doimatkhau"
+        android:icon="@drawable/doimatkhau"
+        android:title="Đổi mật khẩu" />
+
+    <item
+        android:id="@+id/dangxuat"
+        android:icon="@drawable/dangxuat"
+        android:title="Đăng xuất" />
 </menu>
