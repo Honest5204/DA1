@@ -1,5 +1,7 @@
 package com.example.musicapplication.Activity;
 
+
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +15,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ActivitySignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -20,12 +23,20 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class Sign_Up extends AppCompatActivity {
     private ActivitySignUpBinding binding;
 
-
     private String email, password, date, gender, name;
+
+    private ArrayList<Usre> list ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +44,7 @@ public class Sign_Up extends AppCompatActivity {
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        list = new ArrayList<>();
         setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -72,8 +84,7 @@ public class Sign_Up extends AppCompatActivity {
                 }
             }
         });
-
-
+        //Đăng ký
         binding.btnTaoTaiKhoan.setOnClickListener(view -> {
              email = getIntent().getStringExtra("email");
              password = getIntent().getStringExtra("password");
@@ -81,13 +92,50 @@ public class Sign_Up extends AppCompatActivity {
              gender = getIntent().getStringExtra("gender");
              name = binding.edtName.getText().toString().trim();
 
-             onClickDK();
+             dangKy();
+             getData();
 
         });
     }
 
-    private void onClickDK() {
+    private void getData() {
+        // Lấy dữ liệu từ Firebase để cập nhật danh sách trước khi thêm người dùng mới
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("users");
+        databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                list.clear(); // Xóa danh sách để cập nhật dữ liệu mới
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    list.add(usre);
+                }
 
+                // Sau khi cập nhật danh sách, thêm tất cả các người dùng trong danh sách lên Firebase
+                for (Usre user : list) {
+                    addData(user);
+                }
+
+                // Thêm người dùng mới vào danh sách và cập nhật lên Firebase
+                int newUserId = list.size() + 1;
+                Usre newUser = new Usre(newUserId, date, email, gender, name, "", "");
+                addData(newUser);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý khi có lỗi xảy ra
+            }
+        });
+    }
+
+    private void addData(Usre user) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference databaseRef = database.getReference("users");
+        String userId = String.valueOf(user.getId());
+        databaseRef.child(userId).setValue(user);
+    }
+
+    private void dangKy() {
         FirebaseAuth Auth = FirebaseAuth.getInstance();
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading...");
@@ -99,13 +147,7 @@ public class Sign_Up extends AppCompatActivity {
                         progressDialog.dismiss();
                         if (task.isSuccessful()) {
                             Toast.makeText(Sign_Up.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                           Intent intent = new Intent(Sign_Up.this, MainActivity.class);
-                            intent.putExtra("email", email );
-                            intent.putExtra("password", password );
-                            intent.putExtra("date", date );
-                            intent.putExtra("gender", gender );
-                            intent.putExtra("name", name);
-
+                            Intent intent = new Intent(Sign_Up.this, MainActivity.class);
                             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                             startActivity(intent);
                             isFinishing();
@@ -114,7 +156,6 @@ public class Sign_Up extends AppCompatActivity {
                             Toast.makeText(Sign_Up.this, "Đăng ký thất bại", Toast.LENGTH_SHORT).show();
                             }
                         }
-
                 });
     }
 

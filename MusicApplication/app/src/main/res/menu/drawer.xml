@@ -12,6 +12,11 @@
         android:title="Cài đặt" />
 
     <item
+        android:id="@+id/myprofile"
+        android:icon="@drawable/myprofile"
+        android:title="My profile" />
+
+    <item
         android:id="@+id/doimatkhau"
         android:icon="@drawable/doimatkhau"
         android:title="Đổi mật khẩu" />
