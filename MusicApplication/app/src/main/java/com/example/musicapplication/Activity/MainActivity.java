@@ -1,14 +1,22 @@
 package com.example.musicapplication.Activity;
 
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,14 +25,24 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bumptech.glide.Glide;
+import com.example.musicapplication.Interface.MenuController;
+import com.example.musicapplication.Interface.TransFerFra;
+import com.example.musicapplication.Model.Tracks;
+import com.example.musicapplication.MyReceiverAndService.MyService;
 import com.example.musicapplication.R;
-import com.example.musicapplication.databinding.ActivityMainBinding;
 
+import com.example.musicapplication.databinding.ActivityMainBinding;
+import com.example.musicapplication.fragment.BottomNavigation.Home;
 import com.example.musicapplication.fragment.caidat;
 import com.example.musicapplication.fragment.doimatkhau;
 import com.example.musicapplication.fragment.lichsu;
@@ -32,33 +50,24 @@ import com.example.musicapplication.fragment.myprofile;
 import com.example.musicapplication.fragment.premium;
 import com.example.musicapplication.fragment.thuvien;
 import com.example.musicapplication.fragment.timkiem;
-import com.example.musicapplication.fragment.trangchu;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
-
-    private TextView txtEmail;
-
-    private ImageView imgAvatar;
-
+public class MainActivity extends AppCompatActivity implements MenuController, TransFerFra {
     public static final int MY_REQEST_CODE = 10;
-
     final private myprofile myprofile = new myprofile();
-
     final private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() == RESULT_OK) {
                 Intent intent = result.getData();
-               if (intent == null){
-                   return;
-               }
-               Uri uri = intent.getData();
-               myprofile.setUri(uri);
+                if (intent == null) {
+                    return;
+                }
+                Uri uri = intent.getData();
+                myprofile.setUri(uri);
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     myprofile.setBitmap(bitmap);
@@ -68,22 +77,255 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     });
+    private int statusbarColor;
+    private ActivityMainBinding binding;
+    private TextView txtEmail;
+    private ImageView imgAvatar;
+    private boolean isRepeat = false;
+    private Tracks msong;
+    private boolean isPlaying;
+    private ConstraintLayout playerviews;
+    private androidx.appcompat.widget.Toolbar toolbarr;
+    private ImageView imageView, btn_playorpause, btnNexxt, btnprevious, btnloop, btnrepeat,btnback;
+    private TextView txtTitle, txtAtis, txtTime, txtAlltime;
+    private SeekBar seekBar;
+    private Handler handler;
+    private Runnable updateSeekBar;
+    private int repeatButtonClickCount = 0;
+    private BroadcastReceiver repeatStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int repeatState = intent.getIntExtra("repeat_state", 0);
+            updateRepeatButtonUI(repeatState);
+        }
+    };
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle == null) {
+                return;
+            }
+            msong = (Tracks) bundle.get("song");
+            isPlaying = bundle.getBoolean("status_player");
+            int actionMusic = bundle.getInt("action_music");
+            handleLayoutMusic(actionMusic);
+        }
+    };
+    private BroadcastReceiver seekBarReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() != null && intent.getAction().equals("send_seekbar_update")) {
+                int currentPosition = intent.getIntExtra("current_position", 0);
+                int duration = intent.getIntExtra("duration", 0);
+                updateSeekBar(currentPosition, duration);
+            }
+        }
+    };
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (fromUser) {
+                sendSeekToService(progress);
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            // Tạm dừng cập nhật SeekBar khi người dùng đang kéo
+            handler.removeCallbacks(updateSeekBar);
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            // Khi người dùng thả, gửi vị trí tua đến dịch vụ
+            int progress = seekBar.getProgress();
+            sendSeekToService(progress);
+
+            // Tiếp tục cập nhật SeekBar sau khi người dùng thả
+            handler.postDelayed(updateSeekBar, 0);
+        }
+    };
+
+    private void sendRepeatStateToService(int repeatState) {
+        Intent intent = new Intent(this, MyService.class);
+        intent.putExtra("action_music", repeatState);
+        startService(intent);
+    }
+
+    private void toggleRepeat() {
+        repeatButtonClickCount++;
+
+        if (repeatButtonClickCount == 1) {
+            sendRepeatStateToService(MyService.ACTION_REPEAT_ONE);
+        } else if (repeatButtonClickCount == 2) {
+            sendRepeatStateToService(MyService.ACTION_REPEAT_ALL);
+        } else if (repeatButtonClickCount == 3) {
+            repeatButtonClickCount = 0;  // Reset về 0 nếu đã nhấn 3 lần
+            sendRepeatStateToService(MyService.ACTION_REPEAT_OFF);
+        }
+        updateRepeatButtonUI(repeatButtonClickCount);
+    }
+
+    private void updateRepeatButtonUI(int repeatState) {
+        switch (repeatState) {
+            case 0:
+                // Không lặp lại
+                btnrepeat.setImageResource(R.drawable.baseline_repeat_24);
+                break;
+            case 1:
+                // Lặp lại một bài hát
+                btnrepeat.setImageResource(R.drawable.baseline_repeat_one_24);
+                break;
+            case 2:
+                // Lặp lại toàn bộ danh sách phát
+                btnrepeat.setImageResource(R.drawable.baseline_repeat_on_24);
+                break;
+            case 3:
+                // Lặp lại toàn bộ danh sách phát
+                btnrepeat.setImageResource(R.drawable.baseline_repeat_24);
+                break;
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateSeekBar(int currentPosition, int duration) {
+        binding.seekBarr.setMax(duration);
+        binding.seekBarr.setProgress(currentPosition);
+        seekBar.setMax(duration);
+        seekBar.setProgress(currentPosition);
+        txtTime.setText(formatTime(currentPosition));
+        txtAlltime.setText(formatTime(duration));
+    }
+
+    @SuppressLint("DefaultLocale")
+    private String formatTime(int milliseconds) {
+        int seconds = (milliseconds / 1000) % 60;
+        int minutes = ((milliseconds / (1000 * 60)) % 60);
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    private void sendSeekToService(int seekPosition) {
+        Intent intent = new Intent(this, MyService.class);
+        intent.putExtra("action_music", MyService.ACTION_SEEK);
+        intent.putExtra("seek_position", seekPosition);
+        startService(intent);
+    }
+
+    private void handleLayoutMusic(int actionMusic) {
+        switch (actionMusic) {
+            case MyService.ACTION_START:
+                binding.layoutBottom.setVisibility(View.VISIBLE);
+                showInforSong();
+                setStatusButtonPlayorPause();
+                break;
+            case MyService.ACTION_PAUSE:
+                setStatusButtonPlayorPause();
+                break;
+            case MyService.ACTION_RESUME:
+                setStatusButtonPlayorPause();
+                break;
+            case MyService.ACTION_CLEAR:
+                binding.layoutBottom.setVisibility(View.GONE);
+                break;
+            case MyService.ACTION_NEXT:
+                break;
+            case MyService.ACTION_PREVIOUS:
+                break;
+
+        }
+    }
+
+    private void setStatusButtonPlayorPause() {
+        if (isPlaying) {
+            Log.d("MyService", "Button Play/Pause clicked");
+            binding.imgPlayPause.setImageResource(R.drawable.baseline_pause_24);
+            btn_playorpause.setImageResource(R.drawable.baseline_pause_circle_24);
+        } else {
+            binding.imgPlayPause.setImageResource(R.drawable.baseline_play_arrow_24);
+            btn_playorpause.setImageResource(R.drawable.baseline_play_circle_24);
+        }
+    }
+
+    private void showInforSong() {
+        if (msong == null) {
+            return;
+        }
+        Glide.with(this).load(Uri.parse(msong.getImage())).into(binding.img);
+        binding.txttitle.setText(msong.getName());
+        binding.txtSingerSong.setText(msong.getArtists());
+
+        binding.imgPlayPause.setOnClickListener(v -> {
+            if (isPlaying) {
+                sendActionToService(MyService.ACTION_PAUSE);
+            } else {
+                sendActionToService(MyService.ACTION_RESUME);
+            }
+        });
+
+        btnNexxt.setOnClickListener(v -> {
+            sendActionToService(MyService.ACTION_NEXT);
+        });
+        btnprevious.setOnClickListener(v -> {
+            sendActionToService(MyService.ACTION_PREVIOUS);
+        });
+        Glide.with(this).load(Uri.parse(msong.getImage())).into(imageView);
+        txtTitle.setText(msong.getName());
+        txtAtis.setText(msong.getArtists());
+
+        btn_playorpause.setOnClickListener(v -> {
+            if (isPlaying) {
+                sendActionToService(MyService.ACTION_PAUSE);
+            } else {
+                sendActionToService(MyService.ACTION_RESUME);
+            }
+        });
+
+        binding.imgClear.setOnClickListener(v -> {
+            sendActionToService(MyService.ACTION_CLEAR);
+        });
+    }
+
+    private void sendActionToService(int action) {
+        Intent intent = new Intent(this, MyService.class);
+        intent.putExtra("action_music", action);
+        startService(intent);
+    }
+
+    public void startServiceForSong(int songId) {
+        Intent intent = new Intent(this, MyService.class);
+        intent.putExtra("song_id", songId);
+        startForegroundService(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         View header = binding.nav.getHeaderView(0);
         txtEmail = header.findViewById(R.id.txtEmail);
         imgAvatar = header.findViewById(R.id.imgAvatar);
 
+        anhxa();
+        viewPlayer();
+        setupClickListeners();
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(receiver, new IntentFilter("send_action_to_activity"));
+        handler = new Handler();
+        seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(seekBarReceiver, new IntentFilter("send_seekbar_update"));
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(repeatStateReceiver, new IntentFilter("update_repeat_state"));
 
 
         setSupportActionBar(binding.toolbar);
         binding.menu.setOnClickListener(v -> binding.drawerLayout.openDrawer(GravityCompat.START));
-        getSupportFragmentManager().beginTransaction().replace(R.id.fame, new trangchu()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fame, new Home()).commit();
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         showUserInfo();
@@ -93,13 +335,13 @@ public class MainActivity extends AppCompatActivity {
             var itemId = item.getItemId();
             if (itemId == R.id.caidat) {
                 fragment = new caidat();
-            } else if(itemId == R.id.lichsu) {
+            } else if (itemId == R.id.lichsu) {
                 fragment = new lichsu();
-            }else if(itemId == R.id.myprofile) {
+            } else if (itemId == R.id.myprofile) {
                 fragment = myprofile;
-            }else if(itemId == R.id.doimatkhau) {
+            } else if (itemId == R.id.doimatkhau) {
                 fragment = new doimatkhau();
-            }else if(itemId == R.id.dangxuat) {
+            } else if (itemId == R.id.dangxuat) {
                 FirebaseAuth.getInstance().signOut();
                 Intent intent = new Intent(MainActivity.this, Activity1.class);
                 startActivity(intent);
@@ -117,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
             Fragment fragment = null;
             var itemId = item.getItemId();
             if (itemId == R.id.trangchu) {
-                fragment = new trangchu();
+                fragment = new Home();
             } else if (itemId == R.id.timkiem) {
                 fragment = new timkiem();
             } else if (itemId == R.id.thuvien) {
@@ -138,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void showUserInfo() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
+        if (user == null) {
             return;
         }
 
@@ -168,11 +410,101 @@ public class MainActivity extends AppCompatActivity {
         activityResultLauncher.launch(Intent.createChooser(intent, "Cho phép truy cập"));
     }
 
+    private void viewPlayer() {
+        btnback.setOnClickListener(v -> {
+            playerviews.setVisibility(View.GONE);
+            getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.black));
+        });
+    }
+
+    private void anhxa() {
+        playerviews = findViewById(R.id.playerviews);
+        toolbarr = findViewById(R.id.toolbarrr);
+        btnback = findViewById(R.id.btn_back);
+        imageView = findViewById(R.id.imageView);
+        btn_playorpause = findViewById(R.id.btn_playorpause);
+        btnNexxt = findViewById(R.id.btnNexxt);
+        btnprevious = findViewById(R.id.btnprevious);
+        btnloop = findViewById(R.id.btnloop);
+        btnrepeat = findViewById(R.id.btnrepeat);
+        txtTitle = findViewById(R.id.txtTitle);
+        txtAtis = findViewById(R.id.txtAtis);
+        txtTime = findViewById(R.id.txtTime);
+        txtAlltime = findViewById(R.id.txtAlltime);
+        seekBar = findViewById(R.id.seekBar);
+    }
+
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        playerviews.setVisibility(View.GONE);
+        return true;
+    }
+
+    private void setupClickListeners() {
+        binding.layoutBottom.setOnClickListener(v -> {
+            playerviews.setVisibility(View.VISIBLE);
+            getWindow().setStatusBarColor(statusbarColor);
+        });
+        btnrepeat.setOnClickListener(v -> toggleRepeat());
+        btnloop.setOnClickListener(v -> handleLoopPress());
+    }
+
+    public void onImageColorExtracted(int color) {
+        binding.layoutBottom.setBackgroundColor(color);
+        int blendedColor = blendWithBlack(color, 0.6f);
+        statusbarColor = blendedColor;
+        setBackgroundColor(blendedColor);
+    }
+
+    private int blendWithBlack(int color, float ratio) {
+        // Use ColorUtils to blend the color with black
+        return ColorUtils.blendARGB(color, Color.BLACK, ratio);
+    }
+
+    private void setBackgroundColor(int color) {
+        playerviews.setBackgroundColor(color);
+        toolbarr.setBackgroundColor(color);
+    }
+
+
+    private void handleLoopPress() {
+        Intent loopIntent = new Intent("loop_pressed");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(loopIntent);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(seekBarReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(repeatStateReceiver);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             binding.drawerLayout.openDrawer(GravityCompat.START);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void closeMenu() {
+        binding.drawerLayout.closeDrawer(GravityCompat.START);
+        binding.menu.setVisibility(View.VISIBLE);
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.black));
+    }
+
+    @Override
+    public void transferFragment(Fragment fragment, String name) {
+        binding.menu.setVisibility(View.GONE);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fame, fragment)
+                .addToBackStack(name)
+                .commit();
     }
 }

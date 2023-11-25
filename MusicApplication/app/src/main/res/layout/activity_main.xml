@@ -28,11 +28,13 @@
         </androidx.appcompat.widget.Toolbar>
 
         <FrameLayout
+            android:background="@color/black"
             android:id="@+id/fame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/bottomNavigationView"
-            android:layout_below="@+id/toolbar" />
+            android:layout_below="@+id/toolbar"
+            android:layout_alignParentBottom="true"
+            />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigationView"
@@ -43,6 +45,87 @@
             app:itemIconTint="@color/thaydoimaunut"
             app:itemTextColor="@color/thaydoimaunut"
             app:menu="@menu/bottom" />
+        <RelativeLayout
+            android:id="@+id/layoutBottom"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginHorizontal="10dp"
+            android:layout_above="@+id/bottomNavigationView"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="14dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/img"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_centerVertical="true"
+                        android:scaleType="centerCrop"
+                        android:src="@mipmap/ic_launcher" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="10dp"
+                        android:layout_toEndOf="@id/img"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txttitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="xin một lần ngoại lệ"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/txtSinger_song"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Keyo"
+                            android:textColor="@color/white"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/img_play_pause"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="20dp"
+                        android:layout_toStartOf="@id/img_clear"
+                        android:src="@drawable/baseline_pause_24" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/img_clear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/baseline_clear_24" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekBarr"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_alignParentBottom="true"
+                android:progressDrawable="@drawable/seekbar_progress"
+                android:thumb="@android:color/transparent" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
@@ -53,4 +136,6 @@
         android:background="@color/black"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer" />
+
+    <include layout="@layout/player_views" />
 </androidx.drawerlayout.widget.DrawerLayout>
