@@ -25,7 +25,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -33,31 +33,39 @@ import androidx.core.graphics.ColorUtils;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.MyReceiverAndService.MyService;
 import com.example.musicapplication.R;
 
+
+
+import com.example.musicapplication.Fragment.BottomNavigation.FavouriteFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.PremiumFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.SearchFragment;
+import com.example.musicapplication.Fragment.DrawNavigation.ChangePassWordFragment;
+import com.example.musicapplication.Fragment.DrawNavigation.HistoryFragment;
+import com.example.musicapplication.Fragment.DrawNavigation.ProfileFragment;
+import com.example.musicapplication.Fragment.DrawNavigation.SettingFragment;
 import com.example.musicapplication.databinding.ActivityMainBinding;
-import com.example.musicapplication.fragment.BottomNavigation.Home;
-import com.example.musicapplication.fragment.caidat;
-import com.example.musicapplication.fragment.doimatkhau;
-import com.example.musicapplication.fragment.lichsu;
-import com.example.musicapplication.fragment.myprofile;
-import com.example.musicapplication.fragment.premium;
-import com.example.musicapplication.fragment.thuvien;
-import com.example.musicapplication.fragment.timkiem;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements MenuController, TransFerFra {
     public static final int MY_REQEST_CODE = 10;
-    final private myprofile myprofile = new myprofile();
+    private boolean isLikeChanged = false;
+    final private ProfileFragment myprofile = new ProfileFragment();
     final private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
@@ -86,8 +94,9 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private boolean isPlaying;
     private ConstraintLayout playerviews;
     private androidx.appcompat.widget.Toolbar toolbarr;
-    private ImageView imageView, btn_playorpause, btnNexxt, btnprevious, btnloop, btnrepeat,btnback;
-    private TextView txtTitle, txtAtis, txtTime, txtAlltime;
+    private ImageView imageView, btn_playorpause, btnNexxt,
+            btnprevious, btnloop, btnrepeat,btnback,btnLike;
+    private TextView txtTitle, txtAtis, txtTime, txtAlltime,txtNameAlbum;
     private SeekBar seekBar;
     private Handler handler;
     private Runnable updateSeekBar;
@@ -220,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             case MyService.ACTION_START:
                 binding.layoutBottom.setVisibility(View.VISIBLE);
                 showInforSong();
+                extractColorFromImage();
                 setStatusButtonPlayorPause();
                 break;
             case MyService.ACTION_PAUSE:
@@ -253,6 +263,11 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private void showInforSong() {
         if (msong == null) {
             return;
+        }
+        if (msong.isLike()) {
+            btnLike.setImageResource(R.drawable.baseline_check_circle_24);
+        } else {
+            btnLike.setImageResource(R.drawable.baseline_add_circle_outline_24);
         }
         Glide.with(this).load(Uri.parse(msong.getImage())).into(binding.img);
         binding.txttitle.setText(msong.getName());
@@ -295,9 +310,10 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         startService(intent);
     }
 
-    public void startServiceForSong(int songId) {
+    public void startServiceForSong(int songId,int album) {
         Intent intent = new Intent(this, MyService.class);
         intent.putExtra("song_id", songId);
+        intent.putExtra("album",album);
         startForegroundService(intent);
     }
 
@@ -309,7 +325,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         View header = binding.nav.getHeaderView(0);
         txtEmail = header.findViewById(R.id.txtEmail);
         imgAvatar = header.findViewById(R.id.imgAvatar);
-
         anhxa();
         viewPlayer();
         setupClickListeners();
@@ -325,25 +340,24 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
 
         setSupportActionBar(binding.toolbar);
         binding.menu.setOnClickListener(v -> binding.drawerLayout.openDrawer(GravityCompat.START));
-        getSupportFragmentManager().beginTransaction().replace(R.id.fame, new Home()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fame, new HomeFragment()).commit();
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-
         showUserInfo();
 
         binding.nav.setNavigationItemSelectedListener(item -> {
             Fragment fragment = null;
             var itemId = item.getItemId();
             if (itemId == R.id.caidat) {
-                fragment = new caidat();
+                fragment = new SettingFragment();
             } else if (itemId == R.id.lichsu) {
-                fragment = new lichsu();
+                fragment = new HistoryFragment();
             } else if (itemId == R.id.myprofile) {
                 fragment = myprofile;
             } else if (itemId == R.id.doimatkhau) {
-                fragment = new doimatkhau();
+                fragment = new ChangePassWordFragment();
             } else if (itemId == R.id.dangxuat) {
                 FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(MainActivity.this, Activity1.class);
+                Intent intent = new Intent(MainActivity.this, SelectActivity.class);
                 startActivity(intent);
                 finish();
             }
@@ -359,13 +373,13 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             Fragment fragment = null;
             var itemId = item.getItemId();
             if (itemId == R.id.trangchu) {
-                fragment = new Home();
+                fragment = new HomeFragment();
             } else if (itemId == R.id.timkiem) {
-                fragment = new timkiem();
+                fragment = new SearchFragment();
             } else if (itemId == R.id.thuvien) {
-                fragment = new thuvien();
+                fragment = new FavouriteFragment();
             } else {
-                fragment = new premium();
+                fragment = new PremiumFragment();
             }
             getSupportFragmentManager()
                     .beginTransaction()
@@ -377,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
 
 
     }
+
 
     public void showUserInfo() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -421,6 +436,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         playerviews = findViewById(R.id.playerviews);
         toolbarr = findViewById(R.id.toolbarrr);
         btnback = findViewById(R.id.btn_back);
+        btnLike = findViewById(R.id.btnLike);
         imageView = findViewById(R.id.imageView);
         btn_playorpause = findViewById(R.id.btn_playorpause);
         btnNexxt = findViewById(R.id.btnNexxt);
@@ -431,6 +447,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         txtAtis = findViewById(R.id.txtAtis);
         txtTime = findViewById(R.id.txtTime);
         txtAlltime = findViewById(R.id.txtAlltime);
+        txtNameAlbum = findViewById(R.id.txtNameAlbum);
         seekBar = findViewById(R.id.seekBar);
     }
 
@@ -448,9 +465,109 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         });
         btnrepeat.setOnClickListener(v -> toggleRepeat());
         btnloop.setOnClickListener(v -> handleLoopPress());
+        playerviews.setOnTouchListener((v, event) -> {
+            if (playerviews.getVisibility() == View.VISIBLE) {
+                return true;
+            }
+            return false;
+        });
+        btnLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (msong == null) {
+                    return;
+                }
+
+                // Đảo ngược trạng thái "thích"
+                msong.setLike(!msong.isLike());
+
+                // Cập nhật hình ảnh của nút
+                updateLikeButton();
+
+                // Cập nhật trạng thái "thích" trên Firebase
+                updateLikeStatusOnFirebase();
+
+                // Đánh dấu rằng trạng thái "thích" đã thay đổi
+                isLikeChanged = true;
+
+                // Thực hiện thêm/xóa khỏi favorites
+                onClickAddFavorite();
+            }
+        });
+    }
+    private void updateLikeButton() {
+        if (msong.isLike()) {
+            btnLike.setImageResource(R.drawable.baseline_check_circle_24);
+        } else {
+            btnLike.setImageResource(R.drawable.baseline_add_circle_outline_24);
+        }
     }
 
-    public void onImageColorExtracted(int color) {
+    private void onClickAddFavorite() {
+        // Kiểm tra xem trạng thái "thích" có thay đổi không trước khi thực hiện thêm/xóa khỏi favorites
+        if (isLikeChanged) {
+            // Thêm hoặc xóa khỏi favorites tùy thuộc vào trạng thái "thích" mới
+            if (msong.isLike()) {
+                addFavoriteToFirebase();
+            } else {
+                removeFavoriteFromFirebase();
+            }
+
+            // Đặt lại biến isLikeChanged
+            isLikeChanged = false;
+        }
+    }
+
+    private void addFavoriteToFirebase() {
+        // Thêm bài hát vào favorites
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference favoritesRef = database.getReference("favorites");
+        favoritesRef.child(String.valueOf(msong.getId())).setValue(msong);
+        if (!isPlaying) {
+            startServiceForSong(msong.getId(), msong.getAlbum());
+        }
+    }
+
+    private void removeFavoriteFromFirebase() {
+        // Xóa bài hát khỏi favorites
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference favoritesRef = database.getReference("favorites");
+        favoritesRef.child(String.valueOf(msong.getId())).removeValue();
+        if (!isPlaying) {
+            startServiceForSong(msong.getId(), msong.getAlbum());
+        }
+    }
+
+    private void updateLikeStatusOnFirebase() {
+        // Cập nhật trạng thái "thích" của bài hát trên Firebase
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference tracksRef = database.getReference("tracks");
+        tracksRef.child(String.valueOf(msong.getId())).child("like").setValue(msong.isLike());
+    }
+
+    private void extractColorFromImage() {
+        if (msong == null) {
+            return;
+        }
+        // Tải hình ảnh từ Firebase bằng Glide
+        Glide.with(MainActivity.this)
+                .asBitmap()
+                .load(msong.getImage())
+                .into(new SimpleTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        // Sử dụng Palette để trích xuất màu từ Bitmap
+                        Palette.from(resource).generate(palette -> {
+                            // Nhận một mẫu màu tối màu hoặc sử dụng một mẫu màu khác nếu cần
+                            Palette.Swatch getMutedSwatch = palette.getMutedSwatch();
+                            int color = (getMutedSwatch != null) ? getMutedSwatch.getRgb() : Color.TRANSPARENT;
+                            onImageColorExtracted(color);
+                        });
+                    }
+                });
+    }
+
+    private void onImageColorExtracted(int color) {
         binding.layoutBottom.setBackgroundColor(color);
         int blendedColor = blendWithBlack(color, 0.6f);
         statusbarColor = blendedColor;
@@ -503,8 +620,14 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         binding.menu.setVisibility(View.GONE);
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.fame, fragment)
+                .replace(R.id.fame, fragment)
                 .addToBackStack(name)
                 .commit();
     }
+
+    public void getNameCatelory(String name) {
+        txtNameAlbum.setText(name);
+    }
+
+
 }

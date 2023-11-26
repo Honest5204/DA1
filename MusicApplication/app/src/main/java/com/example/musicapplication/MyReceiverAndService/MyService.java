@@ -32,7 +32,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class MyService extends Service {
@@ -133,8 +132,9 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         int songId = intent.getIntExtra("song_id", -1);
-        if (songId != -1) {
-            getSongDetailsFromRealtimeDatabase(songId);
+        int albumId = intent.getIntExtra("album", -1);
+        if (songId != -1 && albumId != -1) {
+            getSongDetailsFromRealtimeDatabase(songId, albumId);
         }
 
         int actionMusic = intent.getIntExtra("action_music", 0);
@@ -146,7 +146,7 @@ public class MyService extends Service {
     }
 
 
-    private void getSongDetailsFromRealtimeDatabase(final int songId) {
+    private void getSongDetailsFromRealtimeDatabase(final int songId, int albumId) {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -155,13 +155,12 @@ public class MyService extends Service {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Tracks song = dataSnapshot.getValue(Tracks.class);
-                    msongList.add(song);
-                    Log.d("MyService", "ID của bài hát trong danh sách: " + song.getId());
-                    if (song != null) {
-                        if (song.getId() == songId) {
-                            Log.d("MyService", "ID của bài hát trong danh sách: " + song.getId());
-                            handleNewSongRequest(song);
-                        }
+                    assert song != null;
+                    if (song.getAlbum() == albumId) {
+                        msongList.add(song);
+                    }
+                    if (song.getId() == songId) {
+                        handleNewSongRequest(song);
                     }
                 }
             }
@@ -231,7 +230,6 @@ public class MyService extends Service {
             sendActionToActivity(ACTION_START);
             senNotificationMedia(tracks);
             handler.postDelayed(updateSeekBar, 0);
-
             mediaPlayer.setOnCompletionListener(mp -> {
                 isPlaying = false;
                 sendActionToActivity(ACTION_PAUSE);
@@ -350,7 +348,7 @@ public class MyService extends Service {
 
                     // Đặt currentSongId thành ID của bài hát mới
                     currentSongId = previousSong.getId();
-
+                    sendActionToActivity(ACTION_PREVIOUS);
                     // Dừng bài hát hiện tại
                     stopCurrentSong();
 
@@ -363,7 +361,7 @@ public class MyService extends Service {
 
                     // Đặt currentSongId thành ID của bài hát mới
                     currentSongId = lastSong.getId();
-
+                    sendActionToActivity(ACTION_PREVIOUS);
                     // Dừng bài hát hiện tại
                     stopCurrentSong();
 
@@ -392,10 +390,9 @@ public class MyService extends Service {
                 if (currentIndex != -1 && currentIndex < msongList.size() - 1) {
                     // Lấy thông tin chi tiết của bài hát tiếp theo từ cơ sở dữ liệu
                     Tracks nextSong = msongList.get(currentIndex + 1);
-
                     // Đặt currentSongId thành ID của bài hát mới
                     currentSongId = nextSong.getId();
-
+                    sendActionToActivity(ACTION_NEXT);
                     // Dừng bài hát hiện tại
                     stopCurrentSong();
 
@@ -405,15 +402,16 @@ public class MyService extends Service {
                     // Nếu bài hát hiện tại là bài hát cuối cùng, bạn có thể muốn lặp lại bài hát đầu tiên
                     // Lấy thông tin chi tiết của bài hát đầu tiên từ cơ sở dữ liệu
                     Tracks firstSong = msongList.get(0);
+                    if (repeatState != 2) {
+                        // Đặt currentSongId thành ID của bài hát mới
+                        currentSongId = firstSong.getId();
+                        sendActionToActivity(ACTION_NEXT);
+                        // Dừng bài hát hiện tại
+                        stopCurrentSong();
 
-                    // Đặt currentSongId thành ID của bài hát mới
-                    currentSongId = firstSong.getId();
-
-                    // Dừng bài hát hiện tại
-                    stopCurrentSong();
-
-                    // Chơi bài hát đầu tiên
-                    handleNewSongRequest(firstSong);
+                        // Chơi bài hát đầu tiên
+                        handleNewSongRequest(firstSong);
+                    }
                 }
             }
             resetLoopCount();
@@ -486,7 +484,6 @@ public class MyService extends Service {
         // Gọi hàm để tải hình ảnh và đặt làm biểu tượng lớn cho Notification
         loadBitmapWithGlide(imageUrl, builder);
     }
-
 
 
     private PendingIntent getPendingIntent(Context context, int action) {

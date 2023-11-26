@@ -1,6 +1,8 @@
 package com.example.musicapplication.Model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Tracks implements Serializable {
     private int id;
@@ -77,5 +79,10 @@ public class Tracks implements Serializable {
 
     public void setPlaycount(String playcount) {
         this.playcount = playcount;
+    }
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("like", like);
+        return result;
     }
 }
