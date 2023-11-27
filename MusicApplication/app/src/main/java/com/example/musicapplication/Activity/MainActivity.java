@@ -38,14 +38,6 @@ import androidx.palette.graphics.Palette;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.example.musicapplication.Interface.MenuController;
-import com.example.musicapplication.Interface.TransFerFra;
-import com.example.musicapplication.Model.Tracks;
-import com.example.musicapplication.MyReceiverAndService.MyService;
-import com.example.musicapplication.R;
-
-
-
 import com.example.musicapplication.Fragment.BottomNavigation.FavouriteFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.PremiumFragment;
@@ -54,17 +46,26 @@ import com.example.musicapplication.Fragment.DrawNavigation.ChangePassWordFragme
 import com.example.musicapplication.Fragment.DrawNavigation.HistoryFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ProfileFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.SettingFragment;
+import com.example.musicapplication.Interface.MenuController;
+import com.example.musicapplication.Interface.TransFerFra;
+import com.example.musicapplication.Model.Tracks;
+import com.example.musicapplication.Model.Usre;
+import com.example.musicapplication.MyReceiverAndService.MyService;
+import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MenuController, TransFerFra {
     public static final int MY_REQEST_CODE = 10;
-    private boolean isLikeChanged = false;
     final private ProfileFragment myprofile = new ProfileFragment();
     final private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
@@ -85,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             }
         }
     });
+    private boolean isLikeChanged = false;
+    private ArrayList<Usre> listUser = new ArrayList<>();
     private int statusbarColor;
     private ActivityMainBinding binding;
     private TextView txtEmail;
@@ -95,8 +98,8 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private ConstraintLayout playerviews;
     private androidx.appcompat.widget.Toolbar toolbarr;
     private ImageView imageView, btn_playorpause, btnNexxt,
-            btnprevious, btnloop, btnrepeat,btnback,btnLike;
-    private TextView txtTitle, txtAtis, txtTime, txtAlltime,txtNameAlbum;
+            btnprevious, btnloop, btnrepeat, btnback, btnLike;
+    private TextView txtTitle, txtAtis, txtTime, txtAlltime, txtNameAlbum;
     private SeekBar seekBar;
     private Handler handler;
     private Runnable updateSeekBar;
@@ -310,10 +313,10 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         startService(intent);
     }
 
-    public void startServiceForSong(int songId,int album) {
+    public void startServiceForSong(int songId, int album) {
         Intent intent = new Intent(this, MyService.class);
         intent.putExtra("song_id", songId);
-        intent.putExtra("album",album);
+        intent.putExtra("album", album);
         startForegroundService(intent);
     }
 
@@ -326,6 +329,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         txtEmail = header.findViewById(R.id.txtEmail);
         imgAvatar = header.findViewById(R.id.imgAvatar);
         anhxa();
+        getIdUser();
         viewPlayer();
         setupClickListeners();
         LocalBroadcastManager.getInstance(this)
@@ -343,17 +347,20 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         getSupportFragmentManager().beginTransaction().replace(R.id.fame, new HomeFragment()).commit();
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         showUserInfo();
-
         binding.nav.setNavigationItemSelectedListener(item -> {
             Fragment fragment = null;
             var itemId = item.getItemId();
             if (itemId == R.id.caidat) {
+                binding.txttitleToolbar.setText("");
                 fragment = new SettingFragment();
             } else if (itemId == R.id.lichsu) {
+                binding.txttitleToolbar.setText("");
                 fragment = new HistoryFragment();
             } else if (itemId == R.id.myprofile) {
+                binding.txttitleToolbar.setText("");
                 fragment = myprofile;
             } else if (itemId == R.id.doimatkhau) {
+                binding.txttitleToolbar.setText("");
                 fragment = new ChangePassWordFragment();
             } else if (itemId == R.id.dangxuat) {
                 FirebaseAuth.getInstance().signOut();
@@ -371,21 +378,43 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment fragment = null;
+            var actionBar = getSupportActionBar();
             var itemId = item.getItemId();
-            if (itemId == R.id.trangchu) {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fame);
+            if (itemId == R.id.trangchu && !(currentFragment instanceof HomeFragment)) {
+                binding.txttitleToolbar.setText("");
+                actionBar.setDisplayHomeAsUpEnabled(false);
+                binding.menu.setVisibility(View.VISIBLE);
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                binding.toolbar.setBackgroundColor(Color.parseColor("#000000"));
                 fragment = new HomeFragment();
-            } else if (itemId == R.id.timkiem) {
+            } else if (itemId == R.id.timkiem && !(currentFragment instanceof SearchFragment)) {
+                binding.txttitleToolbar.setText(R.string.search);
+                actionBar.setDisplayHomeAsUpEnabled(false);
+                binding.menu.setVisibility(View.VISIBLE);
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                binding.toolbar.setBackgroundColor(Color.parseColor("#000000"));
                 fragment = new SearchFragment();
-            } else if (itemId == R.id.thuvien) {
+            } else if (itemId == R.id.thuvien && !(currentFragment instanceof FavouriteFragment)) {
+                binding.txttitleToolbar.setText("");
+                actionBar.setDisplayHomeAsUpEnabled(false);
+                binding.menu.setVisibility(View.VISIBLE);
+                getWindow().setStatusBarColor(Color.parseColor("#31115C"));
+                binding.toolbar.setBackgroundColor(Color.parseColor("#31115C"));
                 fragment = new FavouriteFragment();
-            } else {
+            } else if (itemId == R.id.premium && !(currentFragment instanceof PremiumFragment)) {
+                binding.txttitleToolbar.setText("");
+                actionBar.setDisplayHomeAsUpEnabled(false);
+                binding.menu.setVisibility(View.VISIBLE);
                 fragment = new PremiumFragment();
             }
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fame, fragment)
-                    .commit();
-            binding.drawerLayout.close();
+            if (fragment != null) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fame, fragment)
+                        .commit();
+                binding.drawerLayout.close();
+            }
             return true;
         });
 
@@ -495,6 +524,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             }
         });
     }
+
     private void updateLikeButton() {
         if (msong.isLike()) {
             btnLike.setImageResource(R.drawable.baseline_check_circle_24);
@@ -521,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private void addFavoriteToFirebase() {
         // Thêm bài hát vào favorites
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference favoritesRef = database.getReference("favorites");
+        DatabaseReference favoritesRef = database.getReference("favorites").child(String.valueOf(listUser.get(0).getId()));
         favoritesRef.child(String.valueOf(msong.getId())).setValue(msong);
         if (!isPlaying) {
             startServiceForSong(msong.getId(), msong.getAlbum());
@@ -531,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private void removeFavoriteFromFirebase() {
         // Xóa bài hát khỏi favorites
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference favoritesRef = database.getReference("favorites");
+        DatabaseReference favoritesRef = database.getReference("favorites").child(String.valueOf(listUser.get(0).getId()));
         favoritesRef.child(String.valueOf(msong.getId())).removeValue();
         if (!isPlaying) {
             startServiceForSong(msong.getId(), msong.getAlbum());
@@ -582,6 +612,36 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private void setBackgroundColor(int color) {
         playerviews.setBackgroundColor(color);
         toolbarr.setBackgroundColor(color);
+    }
+
+    private void getIdUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre.getEmail().equals(email)) {
+                        listUser.add(usre);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 

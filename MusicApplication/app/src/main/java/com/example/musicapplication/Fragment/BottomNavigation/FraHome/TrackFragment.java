@@ -80,13 +80,6 @@ public class TrackFragment extends Fragment {
 
 
         private void initToolbar() {
-//            AppCompatActivity activity = (AppCompatActivity) requireActivity();
-//            Toolbar toolbar = binding.toolbar;
-//            activity.setSupportActionBar(toolbar);
-//
-//            if (activity.getSupportActionBar() != null) {
-//                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//            }
             var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
@@ -110,7 +103,7 @@ public class TrackFragment extends Fragment {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("tracks");
 
-        myRef.addValueEventListener(new ValueEventListener() {
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (list != null) {
@@ -147,7 +140,6 @@ public class TrackFragment extends Fragment {
             closeMenu();
             var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
-            getActivity().getWindow().setStatusBarColor(Color.parseColor("#000000"));
             return true;
         }
         return super.onOptionsItemSelected(item);

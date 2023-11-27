@@ -35,9 +35,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.binding.txtTitleSong.setText("" + list.get(position).getName());
+        holder.binding.txtTitleSong.setText(list.get(position).getName());
         Glide.with(holder.itemView.getContext()).load(list.get(position).getImage()).into(holder.binding.imgImageSong);
-        holder.binding.txtArtistSong.setText("" + list.get(position).getArtists());
+        holder.binding.txtArtistSong.setText(list.get(position).getArtists());
         holder.binding.btnbaihat.setOnClickListener(v -> {
             if (context instanceof MainActivity) {
                 ((MainActivity) context).startServiceForSong(list.get(position).getId(),list.get(position).getAlbum());

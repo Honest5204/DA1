@@ -71,6 +71,7 @@ public class MyService extends Service {
         }
     };
 
+
     private boolean shouldRestartSong() {
         return loopPressCount == 0;
     }
@@ -147,7 +148,7 @@ public class MyService extends Service {
 
 
     private void getSongDetailsFromRealtimeDatabase(final int songId, int albumId) {
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (msongList != null) {
@@ -375,6 +376,7 @@ public class MyService extends Service {
             throw new RuntimeException(e);
         }
     }
+
 
     private void playNextSong() {
         try {
