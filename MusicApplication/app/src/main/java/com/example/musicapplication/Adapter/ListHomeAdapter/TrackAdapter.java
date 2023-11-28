@@ -1,4 +1,4 @@
-package com.example.musicapplication.Adapter.adapterhome;
+package com.example.musicapplication.Adapter.ListHomeAdapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -15,14 +15,15 @@ import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ItemTracksBinding;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
     private Context context;
     private ArrayList<Tracks> list;
 
-    public TrackAdapter(Context context, ArrayList<Tracks> list) {
+    public TrackAdapter(Context context, List<Tracks> list) {
         this.context = context;
-        this.list = list;
+        this.list = (ArrayList<Tracks>) list;
     }
 
     @NonNull
@@ -53,7 +54,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
         return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         ItemTracksBinding binding;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

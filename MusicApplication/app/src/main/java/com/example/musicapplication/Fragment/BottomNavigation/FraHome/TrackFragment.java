@@ -15,12 +15,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.example.musicapplication.Adapter.adapterhome.TrackAdapter;
+import com.example.musicapplication.Adapter.ListHomeAdapter.TrackAdapter;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Tracks;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 
 import com.example.musicapplication.databinding.FragmentTrackBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,6 +39,7 @@ public class TrackFragment extends Fragment {
     private FragmentTrackBinding binding;
     private ArrayList<Tracks> list;
     private TrackAdapter adapter;
+    private ArrayList<Usre> listUser= new ArrayList<>();
     private boolean isExpand = true;
 
     public TrackFragment() {
@@ -48,17 +52,17 @@ public class TrackFragment extends Fragment {
                              Bundle savedInstanceState) {
         var view = inflater.inflate(R.layout.fragment_track, container, false);
         binding = FragmentTrackBinding.bind(view);
+        setHasOptionsMenu(true);
         args = getArguments();
         var color = args.getInt("color");
         var image = args.getString("image");
         var album = args.getInt("album");
         onImageColorExtracted(color);
         getActivity().getWindow().setStatusBarColor(Color.parseColor("#000000"));
-        setHasOptionsMenu(true);
         initToolbar();
         loadData();
         initToolbarAnimation(image, color);
-        getListSongFromRealttimeDatabase(album);
+        getIdUser(album);
         return view;
     }
 
@@ -101,7 +105,7 @@ public class TrackFragment extends Fragment {
     private void getListSongFromRealttimeDatabase(int album) {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("tracks");
+        DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(listUser.get(0).getId()));
 
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -121,6 +125,37 @@ public class TrackFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(requireContext(), "get data failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    private void getIdUser(int album){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre != null && usre.getEmail().equals(email)){
+                        listUser.add(usre);
+                    }
+                }
+                // Sau khi lấy dữ liệu người dùng, gọi hàm để lấy danh sách bài hát
+                getListSongFromRealttimeDatabase(album);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
     }

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/playerviews"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -26,10 +25,10 @@
             android:src="@drawable/baseline_arrow_back_ios_24" />
 
         <LinearLayout
-            android:layout_marginTop="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginTop="20dp"
             android:orientation="vertical">
 
             <TextView
@@ -61,7 +60,7 @@
         app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbarrr"
-        app:srcCompat="@drawable/ic_launcher_background" />
+        />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -75,7 +74,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
@@ -86,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="35dp"
                 android:layout_marginTop="20dp"
-                android:text="Xin một lần ngoại lệ"
+
                 android:textColor="@color/white"
                 android:textSize="25sp"
                 android:textStyle="bold" />
@@ -97,18 +96,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="35dp"
                 android:layout_marginTop="5dp"
-                android:text="keyo"
+
                 android:textColor="@color/br"
                 android:textSize="20sp" />
         </LinearLayout>
 
         <ImageView
             android:id="@+id/btnLike"
-            android:layout_marginTop="20dp"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_gravity="center"
-            android:layout_marginRight="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
             android:src="@drawable/baseline_add_circle_outline_24" />
     </LinearLayout>
 
@@ -157,6 +156,7 @@
                 android:text="00:00" />
 
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -207,8 +207,5 @@
 
         </LinearLayout>
     </LinearLayout>
-
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

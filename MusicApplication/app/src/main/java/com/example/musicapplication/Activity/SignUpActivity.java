@@ -14,6 +14,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Toast;
 
+import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ActivitySignUpBinding;
@@ -34,15 +35,18 @@ public class SignUpActivity extends AppCompatActivity {
 
     private String email, password, date, gender, name;
 
-    private ArrayList<Usre> list ;
+    private ArrayList<Usre> list;
+    private ArrayList<Usre> mlist;
+    private ArrayList<Tracks> tracksList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        tracksList = new ArrayList<>();
         list = new ArrayList<>();
+        mlist = new ArrayList<>();
         setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -89,42 +93,75 @@ public class SignUpActivity extends AppCompatActivity {
              date = getIntent().getStringExtra("date");
              gender = getIntent().getStringExtra("gender");
              name = binding.edtName.getText().toString().trim();
-
              dangKy();
-             getData();
+             addTrack();
 
         });
+        getIDUser();
+        getListSongFromRealttimeDatabase();
     }
 
-    private void getData() {
-        // Lấy dữ liệu từ Firebase để cập nhật danh sách trước khi thêm người dùng mới
+    private void getIDUser() {
         DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("users");
         databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list.clear(); // Xóa danh sách để cập nhật dữ liệu mới
+                if (mlist != null) {
+                    mlist.clear();
+                }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
-                    list.add(usre);
+                    mlist.add(usre);
                 }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
-                // Sau khi cập nhật danh sách, thêm tất cả các người dùng trong danh sách lên Firebase
-                for (Usre user : list) {
-                    addData(user);
+            }
+        });
+    }
+
+    private void getListSongFromRealttimeDatabase() {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(1));
+
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (tracksList != null) {
+                    tracksList.clear();
                 }
-
-                // Thêm người dùng mới vào danh sách và cập nhật lên Firebase
-                int newUserId = list.size() + 1;
-                Usre newUser = new Usre(newUserId, date, email, gender, name, "", "");
-                addData(newUser);
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Tracks tracks = dataSnapshot.getValue(Tracks.class);
+                        tracksList.add(tracks);
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý khi có lỗi xảy ra
+                Toast.makeText(getApplicationContext(), "get data failed", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
+    private void addTrack() {
+        int size = 0;
+        int id = 0;
+        if (mlist.isEmpty()){
+           id = 1;
+        }else {
+            size = mlist.size()-1;
+            id = mlist.get(size).getId()+1;
+        }
+
+        Usre newUser = new Usre(id, date, email, gender, name, "", "");
+        addData(newUser);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(id));
+        myRef.setValue(tracksList);
+    }
+
 
     private void addData(Usre user) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();

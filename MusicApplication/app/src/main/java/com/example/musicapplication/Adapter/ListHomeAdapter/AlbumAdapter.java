@@ -1,4 +1,4 @@
-package com.example.musicapplication.Adapter.adapterhome;
+package com.example.musicapplication.Adapter.ListHomeAdapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -31,6 +31,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
     private Context context;
@@ -42,8 +43,8 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
         this.context = context;
     }
 
-    public void setData(ArrayList<Albums> list){
-        this.mlist = list;
+    public void setData(List<Albums> list){
+        this.mlist = (ArrayList<Albums>) list;
         notifyDataSetChanged();
     }
     @NonNull
@@ -76,7 +77,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
                         });
                     }
                 });
-        holder.binding.txtSingerSong.setText(albums.getArtists());
+        holder.binding.txtSingerSong.setText(albums.getName());
         Glide.with(holder.itemView.getContext()).load(mlist.get(position).getImage()).into(holder.binding.imgAlbum);
         holder.binding.itemAlbum.setOnClickListener(v -> {
             Fragment fragment = new TrackFragment();
@@ -105,6 +106,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
                     Albums albums = dataSnapshot.getValue(Albums.class);
                     assert albums != null;
                     if (albums.getCategory() == category){
+                        assert list != null;
                         list.add(albums);
                     }
                 }
@@ -128,7 +130,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
         return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder{
         ItemAlbumBinding binding;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

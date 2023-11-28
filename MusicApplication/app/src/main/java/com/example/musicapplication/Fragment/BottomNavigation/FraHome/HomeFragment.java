@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.example.musicapplication.Adapter.adapterhome.CategoryAdapter;
+import com.example.musicapplication.Adapter.ListHomeAdapter.CategoryAdapter;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Category;
 import com.example.musicapplication.R;
@@ -41,7 +41,7 @@ public class HomeFragment extends Fragment {
         var view = inflater.inflate(R.layout.fragment_home, container, false);
         binding = FragmentHomeBinding.bind(view);
         adapter = new CategoryAdapter(requireContext());
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+        var linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
         binding.recyclerView.setLayoutManager(linearLayoutManager);
         adapter.setData(getListCategory());
         binding.recyclerView.setAdapter(adapter);

@@ -1,5 +1,9 @@
 package com.example.musicapplication.Model;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 public class Usre {
 
     private int id;
@@ -78,6 +82,16 @@ public class Usre {
         this.usertype = usertype;
     }
 
+
     public Usre() {
+    }
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("name", name);
+        result.put("email", email);
+        result.put("gender", gender);
+        result.put("dateofbirth", dateofbirth);
+        result.put("profileimgae", profileimgae);
+        return result;
     }
 }

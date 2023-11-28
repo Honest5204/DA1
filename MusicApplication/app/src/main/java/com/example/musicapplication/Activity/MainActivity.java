@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +42,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Fragment.BottomNavigation.FavouriteFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.PremiumFragment;
-import com.example.musicapplication.Fragment.BottomNavigation.SearchFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraSearch.SearchFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ChangePassWordFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.HistoryFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ProfileFragment;
@@ -67,31 +68,14 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements MenuController, TransFerFra {
     public static final int MY_REQEST_CODE = 10;
     final private ProfileFragment myprofile = new ProfileFragment();
-    final private ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == RESULT_OK) {
-                Intent intent = result.getData();
-                if (intent == null) {
-                    return;
-                }
-                Uri uri = intent.getData();
-                myprofile.setUri(uri);
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    myprofile.setBitmap(bitmap);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    });
+
     private boolean isLikeChanged = false;
     private ArrayList<Usre> listUser = new ArrayList<>();
     private int statusbarColor;
     private ActivityMainBinding binding;
     private TextView txtEmail;
     private ImageView imgAvatar;
+    private LinearLayout btn_profile;
     private boolean isRepeat = false;
     private Tracks msong;
     private boolean isPlaying;
@@ -317,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         Intent intent = new Intent(this, MyService.class);
         intent.putExtra("song_id", songId);
         intent.putExtra("album", album);
+        intent.putExtra("id_user", listUser.get(0).getId());
         startForegroundService(intent);
     }
 
@@ -328,10 +313,9 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         View header = binding.nav.getHeaderView(0);
         txtEmail = header.findViewById(R.id.txtEmail);
         imgAvatar = header.findViewById(R.id.imgAvatar);
+        btn_profile = header.findViewById(R.id.btn_profile);
         anhxa();
         getIdUser();
-        viewPlayer();
-        setupClickListeners();
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(receiver, new IntentFilter("send_action_to_activity"));
         handler = new Handler();
@@ -341,12 +325,14 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(repeatStateReceiver, new IntentFilter("update_repeat_state"));
 
-
+        btn_profile.setOnClickListener(view -> {
+            transferFragment(myprofile, ProfileFragment.TAG);
+            binding.drawerLayout.closeDrawer(GravityCompat.START);
+        });
         setSupportActionBar(binding.toolbar);
         binding.menu.setOnClickListener(v -> binding.drawerLayout.openDrawer(GravityCompat.START));
         getSupportFragmentManager().beginTransaction().replace(R.id.fame, new HomeFragment()).commit();
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        showUserInfo();
         binding.nav.setNavigationItemSelectedListener(item -> {
             Fragment fragment = null;
             var itemId = item.getItemId();
@@ -369,11 +355,13 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 finish();
             }
             if (fragment != null) {
-                var fragmentManager = getSupportFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.fame, fragment).commit();
+               getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fame, fragment)
+                        .commit();
                 binding.drawerLayout.closeDrawer(GravityCompat.START);
             }
-            return false;
+            return true;
         });
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -417,49 +405,19 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             }
             return true;
         });
-
-
+        setupClickListeners();
     }
 
 
     public void showUserInfo() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            return;
-        }
-
-        String email = user.getEmail();
-        Uri uri = user.getPhotoUrl();
-
-        txtEmail.setText(email);
-        Glide.with(this).load(uri).error(R.drawable.avata_default).into(imgAvatar);
+        Glide.with(this).load(listUser.get(0).getProfileimgae()).error(R.drawable.avata_default).into(binding.menu);
+        txtEmail.setText(listUser.get(0).getEmail());
+        Glide.with(this).load(listUser.get(0).getProfileimgae()).error(R.drawable.avata_default).into(imgAvatar);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == MY_REQEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGallery();
-            } else {
-                Toast.makeText(this, "Vui lòng cho phép truy cập", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
-    public void openGallery() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        activityResultLauncher.launch(Intent.createChooser(intent, "Cho phép truy cập"));
-    }
 
-    private void viewPlayer() {
-        btnback.setOnClickListener(v -> {
-            playerviews.setVisibility(View.GONE);
-            getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.black));
-        });
-    }
+
 
     private void anhxa() {
         playerviews = findViewById(R.id.playerviews);
@@ -481,16 +439,16 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     }
 
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        playerviews.setVisibility(View.GONE);
-        return true;
-    }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void setupClickListeners() {
         binding.layoutBottom.setOnClickListener(v -> {
             playerviews.setVisibility(View.VISIBLE);
             getWindow().setStatusBarColor(statusbarColor);
+        });
+        btnback.setOnClickListener(v -> {
+            playerviews.setVisibility(View.GONE);
+            getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.black));
         });
         btnrepeat.setOnClickListener(v -> toggleRepeat());
         btnloop.setOnClickListener(v -> handleLoopPress());
@@ -571,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private void updateLikeStatusOnFirebase() {
         // Cập nhật trạng thái "thích" của bài hát trên Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference tracksRef = database.getReference("tracks");
+        DatabaseReference tracksRef = database.getReference("tracks").child(String.valueOf(listUser.get(0).getId()));
         tracksRef.child(String.valueOf(msong.getId())).child("like").setValue(msong.isLike());
     }
 
@@ -631,10 +589,12 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
+                    assert usre != null;
                     if (usre.getEmail().equals(email)) {
                         listUser.add(usre);
                     }
                 }
+                showUserInfo();
             }
 
             @Override

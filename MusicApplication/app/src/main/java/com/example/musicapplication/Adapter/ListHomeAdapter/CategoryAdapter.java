@@ -1,4 +1,4 @@
-package com.example.musicapplication.Adapter.adapterhome;
+package com.example.musicapplication.Adapter.ListHomeAdapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,6 +14,7 @@ import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ItemCategoryBinding;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
     private Context context;
@@ -22,8 +23,8 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public CategoryAdapter(Context context) {
         this.context = context;
     }
-    public void setData(ArrayList<Category> list){
-        this.list = list;
+    public void setData(List<Category> list){
+        this.list = (ArrayList<Category>) list;
         notifyDataSetChanged();
     }
 
@@ -57,7 +58,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder{
         ItemCategoryBinding binding;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

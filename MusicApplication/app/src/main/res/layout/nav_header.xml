@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:background="@color/black"
     android:gravity="bottom"
+    android:id="@+id/btn_profile"
     android:orientation="vertical"
     android:paddingTop="16dp"
     android:paddingHorizontal="16dp"

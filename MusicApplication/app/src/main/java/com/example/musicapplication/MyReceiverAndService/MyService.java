@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Model.Tracks;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -48,12 +49,14 @@ public class MyService extends Service {
     public static final int ACTION_REPEAT_ALL = 11;
     public static final int ACTION_LOOP = 12;
     private DatabaseReference databaseReference;
+    private DatabaseReference myRef;
     private boolean isLoopPressed = false;
 
 
     private int currentSongId = -1;
 
     private boolean isPlaying;
+    private ArrayList<Usre> listUser = new ArrayList<>();
 
     private ArrayList<Tracks> msongList;
     private Tracks mtracks;
@@ -119,7 +122,6 @@ public class MyService extends Service {
         Log.e("thuc", "onCreate: my service created ");
         msongList = new ArrayList<>();
         setupSeekBarUpdate();
-        databaseReference = FirebaseDatabase.getInstance().getReference("tracks");
         LocalBroadcastManager.getInstance(this).registerReceiver(loopReceiver, new IntentFilter("loop_pressed"));
     }
 
@@ -134,8 +136,9 @@ public class MyService extends Service {
 
         int songId = intent.getIntExtra("song_id", -1);
         int albumId = intent.getIntExtra("album", -1);
+        int userId = intent.getIntExtra("id_user", -1);
         if (songId != -1 && albumId != -1) {
-            getSongDetailsFromRealtimeDatabase(songId, albumId);
+            getSongDetailsFromRealtimeDatabase(songId, albumId, userId);
         }
 
         int actionMusic = intent.getIntExtra("action_music", 0);
@@ -147,7 +150,8 @@ public class MyService extends Service {
     }
 
 
-    private void getSongDetailsFromRealtimeDatabase(final int songId, int albumId) {
+    private void getSongDetailsFromRealtimeDatabase(final int songId, int albumId, int userId) {
+        databaseReference = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(userId));
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -217,12 +221,7 @@ public class MyService extends Service {
     private void startMusic(Tracks tracks) {
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(tracks.getPath()));
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    handleSongCompletion();
-                }
-            });
+            mediaPlayer.setOnCompletionListener(mp -> handleSongCompletion());
         }
 
         if (mediaPlayer != null) {
