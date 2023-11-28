@@ -18,6 +18,10 @@ import com.example.musicapplication.Model.Category;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ItemCatelorySearchBinding;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -85,4 +89,8 @@ public class SearchCategoryAdapter extends RecyclerView.Adapter<SearchCategoryAd
     private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) context).transferFragment(fragment, name);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main
