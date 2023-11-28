@@ -51,5 +51,10 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.14.2")
     implementation ("androidx.palette:palette:1.0.0")
     implementation ("androidx.core:core-ktx:1.12.0")
+    implementation ("org.apache.commons:commons-lang3:3.12.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.3")
+    implementation ("io.github.ParkSangGwon:tedpermission-normal:3.3.0")
+    implementation ("pub.devrel:easypermissions:3.0.0")
+    implementation ("com.droidninja:filepicker:2.2.5")
 
 }

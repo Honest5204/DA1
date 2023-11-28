@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.example.musicapplication.Adapter.adapterhome.TrackAdapter;
+import com.example.musicapplication.Adapter.ListHomeAdapter.TrackAdapter;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.R;

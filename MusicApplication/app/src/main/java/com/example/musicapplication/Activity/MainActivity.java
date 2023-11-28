@@ -41,7 +41,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Fragment.BottomNavigation.FavouriteFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.PremiumFragment;
-import com.example.musicapplication.Fragment.BottomNavigation.SearchFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraSearch.SearchFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ChangePassWordFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.HistoryFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ProfileFragment;

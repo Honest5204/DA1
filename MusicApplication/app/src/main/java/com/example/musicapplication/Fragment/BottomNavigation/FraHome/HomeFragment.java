@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.example.musicapplication.Adapter.adapterhome.CategoryAdapter;
+import com.example.musicapplication.Adapter.ListHomeAdapter.CategoryAdapter;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Category;
 import com.example.musicapplication.R;

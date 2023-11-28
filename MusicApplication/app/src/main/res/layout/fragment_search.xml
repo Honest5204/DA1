@@ -1,14 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragment.BottomNavigation.SearchFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginHorizontal="15dp"
+    android:orientation="vertical"
+    tools:context=".Fragment.BottomNavigation.FraSearch.SearchFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="tìm kiếm" />
+        android:layout_height="wrap_content"
+        app:boxBackgroundColor="@color/white"
+        app:boxBackgroundMode="outline"
+        app:startIconDrawable="@drawable/baseline_search_24"
+        app:startIconTint="#1E2940"
+        android:hint="@string/title_search"
+        android:textColorHint="#1E2940"
+        android:layout_marginTop="30dp"
+        app:boxCornerRadiusBottomEnd="5dp"
+        app:boxCornerRadiusBottomStart="5dp"
+        app:boxCornerRadiusTopEnd="5dp"
+        app:boxCornerRadiusTopStart="5dp"
+        app:helperTextTextColor="@color/white">
 
-</FrameLayout>
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtEmailDN"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="text"
+            android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:id="@+id/txtTitleSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/duyet_tim"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSearchAlbum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:visibility="gone"
+        android:id="@+id/recyclerViewSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>

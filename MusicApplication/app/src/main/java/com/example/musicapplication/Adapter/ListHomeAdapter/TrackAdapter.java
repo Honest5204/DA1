@@ -1,4 +1,4 @@
-package com.example.musicapplication.Adapter.adapterhome;
+package com.example.musicapplication.Adapter.ListHomeAdapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
