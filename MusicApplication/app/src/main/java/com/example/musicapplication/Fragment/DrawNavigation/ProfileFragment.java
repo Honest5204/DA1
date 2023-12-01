@@ -1,41 +1,28 @@
 package com.example.musicapplication.Fragment.DrawNavigation;
 
-import static com.example.musicapplication.Activity.MainActivity.MY_REQEST_CODE;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Activity.MainActivity;
-import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
-import com.example.musicapplication.Interface.MenuController;
-import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentMyprofileBinding;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -54,16 +41,14 @@ import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
 
-public class ProfileFragment extends Fragment implements EasyPermissions.PermissionCallbacks{
+public class ProfileFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
     public static final String TAG = ProfileFragment.class.getName();
-
-private FragmentMyprofileBinding binding;
     ArrayList<Uri> listUri = new ArrayList<>();
+    private FragmentMyprofileBinding binding;
+    private MainActivity mainActivity;
 
-private MainActivity mainActivity;
-
-private ProgressDialog progressDialog;
-    private ArrayList<Usre> listUser= new ArrayList<>();
+    private ProgressDialog progressDialog;
+    private ArrayList<Usre> listUser = new ArrayList<>();
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -89,6 +74,7 @@ private ProgressDialog progressDialog;
             EasyPermissions.requestPermissions(this, "Cấp quyền truy cập ảnh", 100, strings);
         }
     }
+
     public void imagePicker() {
         FilePickerBuilder.getInstance()
                 .setActivityTitle("Chọn ảnh")
@@ -99,6 +85,7 @@ private ProgressDialog progressDialog;
                 .setActivityTheme(R.style.CustomTheme)
                 .pickPhoto(this);
     }
+
     private void setUserInformation(ArrayList<Usre> listUser) {
         binding.edtEmail.setText(listUser.get(0).getEmail());
         binding.edtName.setText(listUser.get(0).getName());
@@ -109,7 +96,8 @@ private ProgressDialog progressDialog;
         binding.spinnerGender.setAdapter(genderAdapter);
         Glide.with(this).load(listUser.get(0).getProfileimgae()).error(R.drawable.avata_default).into(binding.imgAvatar);
     }
-    private void getIdUser(){
+
+    private void getIdUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return;
@@ -126,7 +114,7 @@ private ProgressDialog progressDialog;
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
-                    if (usre != null && usre.getEmail().equals(email)){
+                    if (usre != null && usre.getEmail().equals(email)) {
                         listUser.add(usre);
                     }
                 }
@@ -207,11 +195,10 @@ private ProgressDialog progressDialog;
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(String.valueOf(listUser.get(0).getId()));
         userRef.child("name").setValue(name);
         userRef.child("email").setValue(email);
-        userRef.child("dateOfBirth").setValue(dateOfBirth);
+        userRef.child("dateofbirth").setValue(dateOfBirth);
         userRef.child("gender").setValue(gender);
-        userRef.child("profileimgae").setValue(imageUrl); // Chú ý sửa "profileimae" thành "profileimage"
+        userRef.child("profileimgae").setValue(imageUrl);
     }
-
 
 
     @Override
@@ -231,6 +218,7 @@ private ProgressDialog progressDialog;
             }
         }
     }
+
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
         if (requestCode == 100 && perms.size() == 1) {

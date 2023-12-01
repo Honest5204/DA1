@@ -10,11 +10,18 @@
         android:id="@+id/caidat"
         android:icon="@drawable/baseline_settings_24"
         android:title="Cài đặt" />
-
     <item
-        android:id="@+id/myprofile"
-        android:icon="@drawable/myprofile"
-        android:title="My profile" />
+        android:id="@+id/baihat"
+        android:icon="@drawable/baseline_contactless_24"
+        android:title="Bài hát" />
+    <item
+        android:id="@+id/nguoidung"
+        android:icon="@drawable/baseline_contactless_24"
+        android:title="Người dùng" />
+    <item
+        android:id="@+id/thongke"
+        android:icon="@drawable/baseline_contactless_24"
+        android:title="Thống kê" />
 
     <item
         android:id="@+id/doimatkhau"

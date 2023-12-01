@@ -34,6 +34,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyService extends Service {
     public static final int ACTION_PAUSE = 1;
@@ -133,7 +135,6 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         int songId = intent.getIntExtra("song_id", -1);
         int albumId = intent.getIntExtra("album", -1);
         int userId = intent.getIntExtra("id_user", -1);
@@ -219,6 +220,10 @@ public class MyService extends Service {
     }
 
     private void startMusic(Tracks tracks) {
+        var databaseReference = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(listUser.get(0).getId()));
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("playcount", String.valueOf(tracks.getPlaycount()+1));
+        databaseReference.child(String.valueOf(tracks.getId() -1)).updateChildren(updates);
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(tracks.getPath()));
             mediaPlayer.setOnCompletionListener(mp -> handleSongCompletion());

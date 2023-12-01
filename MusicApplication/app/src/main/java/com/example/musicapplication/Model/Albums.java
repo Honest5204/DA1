@@ -8,6 +8,9 @@ public class Albums {
     private int category;
     private String release;
 
+    public Albums() {
+    }
+
     public int getId() {
         return id;
     }

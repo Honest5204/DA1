@@ -13,9 +13,13 @@ public class Category {
         this.albums = albums;
     }
 
+
     public Category(int id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Category() {
     }
 
     public String getName() {

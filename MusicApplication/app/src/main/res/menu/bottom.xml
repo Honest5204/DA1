@@ -16,4 +16,10 @@
         android:id="@+id/premium"
         android:icon="@drawable/baseline_contactless_24"
         android:title="Premium" />
+
+    <item
+        android:id="@+id/goi"
+        android:icon="@drawable/baseline_contactless_24"
+        android:title="Gói" />
+
 </menu>

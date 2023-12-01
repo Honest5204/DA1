@@ -57,5 +57,6 @@ dependencies {
     implementation ("io.github.ParkSangGwon:tedpermission-normal:3.3.0")
     implementation ("pub.devrel:easypermissions:3.0.0")
     implementation ("com.droidninja:filepicker:2.2.5")
+    implementation ("com.google.android.gms:play-services-ads:22.5.0")
 
 }

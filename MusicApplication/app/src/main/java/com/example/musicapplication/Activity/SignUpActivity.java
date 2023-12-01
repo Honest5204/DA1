@@ -155,7 +155,7 @@ public class SignUpActivity extends AppCompatActivity {
             id = mlist.get(size).getId()+1;
         }
 
-        Usre newUser = new Usre(id, date, email, gender, name, "", "");
+        Usre newUser = new Usre(id, date, email, gender, name, "", "user");
         addData(newUser);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(id));
@@ -183,6 +183,7 @@ public class SignUpActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Toast.makeText(SignUpActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                             startActivity(intent);
                             isFinishing();

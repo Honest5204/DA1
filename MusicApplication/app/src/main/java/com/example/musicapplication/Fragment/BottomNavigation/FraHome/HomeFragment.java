@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,58 +26,84 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class HomeFragment extends Fragment {
-    public static final String TAG = HomeFragment.class.getName();
     private CategoryAdapter adapter;
     private FragmentHomeBinding binding;
-    private ArrayList<Albums> listNhactre = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
 
     public HomeFragment() {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        var view = inflater.inflate(R.layout.fragment_home, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
         binding = FragmentHomeBinding.bind(view);
         adapter = new CategoryAdapter(requireContext());
-        var linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
         binding.recyclerView.setLayoutManager(linearLayoutManager);
-        adapter.setData(getListCategory());
         binding.recyclerView.setAdapter(adapter);
-        getListAlbumFromRealttimeDatabase(1,listNhactre);
+        getListCategoryWithAlbumsFromRealtimeDatabase();
         return view;
     }
 
-    private ArrayList<Category> getListCategory() {
-        ArrayList<Category> list = new ArrayList<>();
-        list.add(new Category("Nhạc trẻ", listNhactre));
-        return list;
-    }
-    private void getListAlbumFromRealttimeDatabase(final int category,ArrayList<Albums> mlist) {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("albums");
+    private void getListCategoryWithAlbumsFromRealtimeDatabase() {
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference();
 
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseRef.child("category").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (mlist != null) {
-                    mlist.clear();
+            public void onDataChange(@NonNull DataSnapshot categorySnapshot) {
+                if (categories != null) {
+                    categories.clear();
                 }
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Albums albums = dataSnapshot.getValue(Albums.class);
-                    assert albums != null;
-                    if (albums.getCategory() == category){
-                        mlist.add(albums);
-                    }
+
+                for (DataSnapshot categoryDataSnapshot : categorySnapshot.getChildren()) {
+                    Long categoryIdLong = categoryDataSnapshot.child("id").getValue(Long.class);
+
+                    // Chuyển đổi thành kiểu int
+                    int categoryId = categoryIdLong != null ? categoryIdLong.intValue() : 0;
+
+                    // Lấy các thông tin khác của category
+                    String categoryName = categoryDataSnapshot.child("name").getValue(String.class);
+
+                    // Lấy danh sách album từ bảng "albums" dựa trên id của category
+                    ArrayList<Albums> albumList = new ArrayList<>();
+                    databaseRef.child("albums").orderByChild("category").equalTo(categoryId)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot albumSnapshot) {
+                                    for (DataSnapshot albumDataSnapshot : albumSnapshot.getChildren()) {
+                                        Albums album = albumDataSnapshot.getValue(Albums.class);
+                                        if (album != null) {
+                                            albumList.add(album);
+                                            Log.d("homefragment", "onDataChange: ");
+                                        }
+                                    }
+                                    // Tạo đối tượng CategoryWithAlbums và thêm vào danh sách
+                                    Category category = new Category(categoryName,albumList);
+                                    categories.add(category);
+
+                                    // Cập nhật giao diện khi đã lấy đủ dữ liệu
+                                    adapter.setData(categories);
+                                    adapter.notifyDataSetChanged();
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    // Xử lý lỗi nếu có
+                                }
+                            });
                 }
+                adapter.setData(categories);
+
+                // Thông báo cho adapter về sự thay đổi và cập nhật RecyclerView
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(requireContext(), "get data failed", Toast.LENGTH_SHORT).show();
+                // Xử lý lỗi nếu có
             }
         });
     }
