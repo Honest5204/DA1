@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="10dp" /> <!-- Điều này sẽ tạo ra hiệu ứng bo tròn với bán kính 16dp, bạn có thể điều chỉnh giá trị theo mong muốn -->
+   <!-- Màu nền của LinearLayout -->
+</shape>
