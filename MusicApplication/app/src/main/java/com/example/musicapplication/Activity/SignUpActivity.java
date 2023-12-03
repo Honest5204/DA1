@@ -124,7 +124,7 @@ public class SignUpActivity extends AppCompatActivity {
     private void getListSongFromRealttimeDatabase() {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(1));
+        DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(2));
 
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -155,7 +155,7 @@ public class SignUpActivity extends AppCompatActivity {
             id = mlist.get(size).getId()+1;
         }
 
-        Usre newUser = new Usre(id, date, email, gender, name, "", "user");
+        Usre newUser = new Usre(id, date, email, gender, name, "https://firebasestorage.googleapis.com/v0/b/musicapplication-451a2.appspot.com/o/profile_images%2Favata_default.jpg?alt=media&token=7d79fd8a-61ad-486f-82c5-e006454ded34", "user");
         addData(newUser);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(id));

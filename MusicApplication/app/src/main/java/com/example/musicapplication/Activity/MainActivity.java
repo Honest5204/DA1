@@ -5,8 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +16,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -38,12 +41,13 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Fragment.BottomNavigation.FavouriteFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.ConfirmFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.ListUserFragment.UserFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage.ManageFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.StatisticFragment;
-import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.ListUserFragment.UserFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TopFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraPremium.PremiumFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraSearch.SearchFragment;
-import com.example.musicapplication.Fragment.BottomNavigation.PremiumFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ChangePassWordFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.HistoryFragment;
 import com.example.musicapplication.Fragment.DrawNavigation.ProfileFragment;
@@ -52,14 +56,13 @@ import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.Model.Usre;
+import com.example.musicapplication.MyReceiverAndService.MyReceiver;
 import com.example.musicapplication.MyReceiverAndService.MyService;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ActivityMainBinding;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -74,15 +77,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements MenuController, TransFerFra {
     public static final int MY_REQEST_CODE = 10;
+    final private ProfileFragment myprofile = new ProfileFragment();
+    private MyReceiver myreceiver;
     private InterstitialAd mInterstitialAd;
     private Handler mHandler;
-    final private ProfileFragment myprofile = new ProfileFragment();
-
     private boolean isLikeChanged = false;
     private BottomSheetBehavior bottomSheetBehavior;
     private ArrayList<Usre> listUser = new ArrayList<>();
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     private TextView txtTitle, txtAtis, txtTime, txtAlltime, txtNameAlbum, txttitle, txtSingerSong, txttitleToolbar;
     private SeekBar seekBar, seekBarr;
     private Handler handler;
+    private Button btnHome, btnTop;
     private Runnable updateSeekBar;
     private int repeatButtonClickCount = 0;
     private BroadcastReceiver repeatStateReceiver = new BroadcastReceiver() {
@@ -277,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         mInterstitialAd = interstitialAd;
                         Log.d("MainActivity", "Quảng cáo toàn màn hình đã tải thành công.");
-                        if (mInterstitialAd != null ) {
+                        if (mInterstitialAd != null) {
                             mInterstitialAd.show(MainActivity.this);
                         } else {
                             Log.d("MainActivity", "Quảng cáo toàn màn hình không sẵn sàng.");
@@ -289,7 +291,8 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                         Log.d("MainActivity", "Lỗi khi tải quảng cáo toàn màn hình: " + loadAdError.toString());
                         mInterstitialAd = null;
                     }
-                });
+                }
+                           );
     }
 
     private void setStatusButtonPlayorPause() {
@@ -308,9 +311,9 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             return;
         }
         if (msong.isLike()) {
-            btnLike.setImageResource(R.drawable.baseline_check_circle_24);
+            btnLike.setImageResource(R.drawable.baseline_favorite_24);
         } else {
-            btnLike.setImageResource(R.drawable.baseline_add_circle_outline_24);
+            btnLike.setImageResource(R.drawable.baseline_favorite_border_24);
         }
         Glide.with(this).load(Uri.parse(msong.getImage())).into(img);
         txttitle.setText(msong.getName());
@@ -355,10 +358,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
 
     public void startServiceForSong(int songId, int album) {
         var type = listUser.get(0).getUsertype();
-        if (type.equals("admin")) {
-            var menuBT = bottomNavigationView.getMenu();
-            menuBT.findItem(R.id.premium).setVisible(false);
-        } else if (type.equals("user")) {
+        if (type.equals("user")) {
             loadInterstitialAd("ca-app-pub-3940256099942544/1033173712");
         }
         Intent intent = new Intent(this, MyService.class);
@@ -374,6 +374,7 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         anhxa();
+        myreceiver = new MyReceiver();
         View header = nav.getHeaderView(0);
         txtEmail = header.findViewById(R.id.txtEmail);
         imgAvatar = header.findViewById(R.id.imgAvatar);
@@ -387,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 .registerReceiver(seekBarReceiver, new IntentFilter("send_seekbar_update"));
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(repeatStateReceiver, new IntentFilter("update_repeat_state"));
-
         btn_profile.setOnClickListener(view -> {
             transferFragment(myprofile, ProfileFragment.TAG);
             drawerLayout.closeDrawer(GravityCompat.START);
@@ -403,24 +403,48 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             Fragment fragment = null;
             var itemId = item.getItemId();
             if (itemId == R.id.caidat) {
-                txttitleToolbar.setText("");
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                toolbar.setBackgroundColor(Color.parseColor("#000000"));
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
+                txttitleToolbar.setText("Cài đặt");
                 fragment = new SettingFragment();
             } else if (itemId == R.id.lichsu) {
-                txttitleToolbar.setText("");
+                txttitleToolbar.setText(R.string.history);
+                getWindow().setStatusBarColor(Color.parseColor("#115C47"));
+                toolbar.setBackgroundColor(Color.parseColor("#115C47"));
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 fragment = new HistoryFragment();
             } else if (itemId == R.id.doimatkhau) {
                 txttitleToolbar.setText("");
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                toolbar.setBackgroundColor(Color.parseColor("#000000"));
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 fragment = new ChangePassWordFragment();
             } else if (itemId == R.id.baihat) {
-                txttitleToolbar.setText("");
+                txttitleToolbar.setText(R.string.manage);
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                toolbar.setBackgroundColor(Color.parseColor("#000000"));
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 menu.setVisibility(View.VISIBLE);
                 fragment = new ManageFragment();
             } else if (itemId == R.id.nguoidung) {
-                txttitleToolbar.setText("");
+                txttitleToolbar.setText(R.string.listUser);
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                toolbar.setBackgroundColor(Color.parseColor("#000000"));
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 menu.setVisibility(View.VISIBLE);
                 fragment = new UserFragment();
             } else if (itemId == R.id.thongke) {
                 txttitleToolbar.setText("");
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+                toolbar.setBackgroundColor(Color.parseColor("#000000"));
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 menu.setVisibility(View.VISIBLE);
                 fragment = new StatisticFragment();
             } else if (itemId == R.id.dangxuat) {
@@ -438,7 +462,34 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             }
             return true;
         });
-
+        btnHome.setOnClickListener(v -> {
+            txttitleToolbar.setText("");
+            ColorStateList colorStateList = ColorStateList.valueOf(getResources().getColor(R.color.green));
+            btnHome.setBackgroundTintList(colorStateList);
+            btnHome.setTextColor(Color.parseColor("#000000"));
+            btnTop.setTextColor(Color.parseColor("#FFFFFF"));
+            btnTop.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
+            menu.setVisibility(View.VISIBLE);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fame, new HomeFragment())
+                    .commit();
+            drawerLayout.closeDrawer(GravityCompat.START);
+        });
+        btnTop.setOnClickListener(v -> {
+            txttitleToolbar.setText("");
+            ColorStateList colorStateList = ColorStateList.valueOf(getResources().getColor(R.color.green));
+            btnTop.setBackgroundTintList(colorStateList);
+            btnTop.setTextColor(Color.parseColor("#000000"));
+            btnHome.setTextColor(Color.parseColor("#FFFFFF"));
+            btnHome.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
+            menu.setVisibility(View.VISIBLE);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fame, new TopFragment())
+                    .commit();
+            drawerLayout.closeDrawer(GravityCompat.START);
+        });
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment fragment = null;
             var actionBar = getSupportActionBar();
@@ -446,6 +497,14 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fame);
             if (itemId == R.id.trangchu && !(currentFragment instanceof HomeFragment)) {
                 txttitleToolbar.setText("");
+                btnHome.setVisibility(View.VISIBLE);
+                btnTop.setVisibility(View.VISIBLE);
+                ColorStateList colorStateList = ColorStateList.valueOf(getResources().getColor(R.color.green));
+                btnHome.setBackgroundTintList(colorStateList);
+                btnHome.setTextColor(Color.parseColor("#000000"));
+                btnTop.setTextColor(Color.parseColor("#FFFFFF"));
+                btnTop.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
+
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
                 getWindow().setStatusBarColor(Color.parseColor("#000000"));
@@ -455,11 +514,15 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 txttitleToolbar.setText(R.string.search);
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 getWindow().setStatusBarColor(Color.parseColor("#000000"));
                 toolbar.setBackgroundColor(Color.parseColor("#000000"));
                 fragment = new SearchFragment();
             } else if (itemId == R.id.thuvien && !(currentFragment instanceof FavouriteFragment)) {
                 txttitleToolbar.setText("");
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
                 getWindow().setStatusBarColor(Color.parseColor("#31115C"));
@@ -467,11 +530,17 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 fragment = new FavouriteFragment();
             } else if (itemId == R.id.premium && !(currentFragment instanceof PremiumFragment)) {
                 txttitleToolbar.setText("");
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
+                getWindow().setStatusBarColor(Color.parseColor("#5C113E"));
+                toolbar.setBackgroundColor(Color.parseColor("#5C113E"));
                 fragment = new PremiumFragment();
             } else if (itemId == R.id.goi && !(currentFragment instanceof ConfirmFragment)) {
                 txttitleToolbar.setText("");
+                btnHome.setVisibility(View.GONE);
+                btnTop.setVisibility(View.GONE);
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
                 fragment = new ConfirmFragment();
@@ -494,8 +563,9 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 // Lặp lại sau mỗi 3 phút
                 mHandler.postDelayed(this, 3 * 60 * 1000); // 3 phút * 60 giây * 1000 milliseconds
             }
-        }, 3* 60 * 1000);
+        }, 3 * 60 * 1000);
     }
+
     private void stopHandler() {
         // Loại bỏ tất cả các callback và tin nhắn trong Handler
         mHandler.removeCallbacksAndMessages(null);
@@ -525,6 +595,8 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         imgClear = findViewById(R.id.img_clear);
         menu = findViewById(R.id.menu);
         btnNexxt = findViewById(R.id.btnNexxt);
+        btnHome = findViewById(R.id.btnHome);
+        btnTop = findViewById(R.id.btnTop);
         btnprevious = findViewById(R.id.btnprevious);
         btnloop = findViewById(R.id.btnloop);
         btnrepeat = findViewById(R.id.btnrepeat);
@@ -584,9 +656,9 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
 
     private void updateLikeButton() {
         if (msong.isLike()) {
-            btnLike.setImageResource(R.drawable.baseline_check_circle_24);
+            btnLike.setImageResource(R.drawable.baseline_favorite_24);
         } else {
-            btnLike.setImageResource(R.drawable.baseline_add_circle_outline_24);
+            btnLike.setImageResource(R.drawable.baseline_favorite_border_24);
         }
     }
 
@@ -654,8 +726,8 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 });
     }
 
-    private void onImageColorExtracted(int color) {
-        layoutBottom.setBackgroundColor(color);
+    private void onImageColorExtracted(int color) {// Chuyển màu xám từ resources
+        layoutBottom.setBackgroundTintList(ColorStateList.valueOf(color));
         int blendedColor = blendWithBlack(color, 0.6f);
         statusbarColor = blendedColor;
         setBackgroundColor(blendedColor);
@@ -697,6 +769,13 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 if (type.equals("admin")) {
                     var menuBT = bottomNavigationView.getMenu();
                     menuBT.findItem(R.id.premium).setVisible(false);
+                } else if (type.equals("premium")) {
+                    var menuDR = nav.getMenu();
+                    var menu = bottomNavigationView.getMenu();
+                    menuDR.findItem(R.id.baihat).setVisible(false);
+                    menuDR.findItem(R.id.thongke).setVisible(false);
+                    menuDR.findItem(R.id.nguoidung).setVisible(false);
+                    menu.findItem(R.id.goi).setVisible(false);
                 } else if (type.equals("user")) {
                     var menuDR = nav.getMenu();
                     var menu = bottomNavigationView.getMenu();
@@ -727,7 +806,8 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                                     Log.d("MainActivity", "Lỗi khi tải quảng cáo toàn màn hình: " + loadAdError.toString());
                                     mInterstitialAd = null;
                                 }
-                            });
+                            }
+                                       );
                 }
                 showUserInfo();
             }
@@ -739,7 +819,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
         });
 
     }
-
 
 
     private void handleLoopPress() {
@@ -781,6 +860,19 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 .replace(R.id.fame, fragment)
                 .addToBackStack(name)
                 .commit();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(myreceiver, intentFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(myreceiver);
     }
 
     public void getNameCatelory(String name) {

@@ -17,7 +17,7 @@ import com.example.musicapplication.databinding.ItemTracksBinding;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
+public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder> {
     private Context context;
     private ArrayList<Tracks> list;
 
@@ -29,9 +29,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            var inflater = LayoutInflater.from(parent.getContext());
-            var view = inflater.inflate(R.layout.item_tracks, parent, false);
-            return new ViewHolder(view);
+        var inflater = LayoutInflater.from(parent.getContext());
+        var view = inflater.inflate(R.layout.item_tracks, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
@@ -41,14 +41,14 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
         holder.binding.txtArtistSong.setText(list.get(position).getArtists());
         holder.binding.btnbaihat.setOnClickListener(v -> {
             if (context instanceof MainActivity) {
-                ((MainActivity) context).startServiceForSong(list.get(position).getId(),list.get(position).getAlbum());
+                ((MainActivity) context).startServiceForSong(list.get(position).getId(), list.get(position).getAlbum());
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        if (list != null){
+        if (list != null) {
             return list.size();
         }
         return 0;
@@ -56,6 +56,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.ViewHolder>{
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ItemTracksBinding binding;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             binding = ItemTracksBinding.bind(itemView);

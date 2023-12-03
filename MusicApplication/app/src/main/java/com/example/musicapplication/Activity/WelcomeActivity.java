@@ -23,7 +23,7 @@ public class WelcomeActivity extends AppCompatActivity {
             public void run() {
                 nextAcitivity();
             }
-        },2000);
+        },1500);
     }
 
     private void nextAcitivity() {

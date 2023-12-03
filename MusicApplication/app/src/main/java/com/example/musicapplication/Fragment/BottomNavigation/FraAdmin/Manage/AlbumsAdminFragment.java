@@ -15,12 +15,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.musicapplication.Adapter.AdminAdapter.ManageAlbumsAdapter;
-import com.example.musicapplication.Adapter.AdminAdapter.ManageTrackAdapter;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Albums;
-import com.example.musicapplication.Model.Category;
-import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentAlbumsAdminBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -72,6 +69,7 @@ public class AlbumsAdminFragment extends Fragment {
         return view;
 
     }
+
     private void getListSongFromRealttimeDatabase() {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -96,6 +94,7 @@ public class AlbumsAdminFragment extends Fragment {
             }
         });
     }
+
     private void moAnima() {
         binding.mainFabBtn.setOnClickListener(v -> {
             if (isExpanded) {
@@ -127,6 +126,7 @@ public class AlbumsAdminFragment extends Fragment {
 
         isExpanded = !isExpanded;
     }
+
     private void anhxaAnima() {
         fromBottomFabAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.from_bottom_fab);
         toBottomFabAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.to_bottom_fab);
@@ -143,7 +143,7 @@ public class AlbumsAdminFragment extends Fragment {
         binding.recyclerview.setAdapter(adapter);
     }
 
-    private void transferFragment(Fragment fragment,String name) {
+    private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) requireActivity()).transferFragment(fragment, name);
     }
 

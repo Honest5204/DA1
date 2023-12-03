@@ -70,13 +70,13 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
         args = getArguments();
         assert args != null;
         var idTrack = args.getString("id");
-        int id = Integer.parseInt(idTrack) -1;
+        int id = Integer.parseInt(idTrack) - 1;
         initToolbar();
         progressDialog = new ProgressDialog(requireContext());
         binding.btnbaihat.setOnClickListener(v -> pickMp3File());
         binding.imgTrack.setOnClickListener(v -> requestPermission());
         getTrack(idTrack);
-        binding.btnUpdate.setOnClickListener(v -> updateTrack(idTrack,id));
+        binding.btnUpdate.setOnClickListener(v -> updateTrack(idTrack, id));
         getDataForSpinner(binding.spnAlbum);
         return view;
     }
@@ -85,7 +85,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
         return str == null || str.trim().isEmpty();
     }
 
-    private void updateTrack(String idTrack,int id) {
+    private void updateTrack(String idTrack, int id) {
         var HMT = (HashMap<String, Object>) binding.spnAlbum.getSelectedItem();
         var idAlbum = (int) HMT.get("id");
         var nameTrack = binding.txtNameTrack.getText().toString().trim();
@@ -112,7 +112,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
                                 if (mp3Task.isSuccessful()) {
                                     mp3Ref.getDownloadUrl().addOnSuccessListener(mp3DownloadUrl -> {
                                         // Cập nhật thông tin vào Realtime Database
-                                        updateTrackToAllUsers(idAlbum, nameTrack, nameArtist, downloadUrl.toString(), mp3DownloadUrl.toString(),idTrack,id);
+                                        updateTrackToAllUsers(idAlbum, nameTrack, nameArtist, downloadUrl.toString(), mp3DownloadUrl.toString(), idTrack, id);
                                         progressDialog.dismiss();
                                         Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
                                         getParentFragmentManager().popBackStack();
@@ -132,14 +132,14 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
                 Toast.makeText(requireContext(), "Vui lòng nhập tên bài hát và nghệ sĩ", Toast.LENGTH_SHORT).show();
             }
         } else {
-            updateTrackToAllUsers(idAlbum, nameTrack, nameArtist,list.get(0).getImage(), list.get(0).getPath(),idTrack,id);
+            updateTrackToAllUsers(idAlbum, nameTrack, nameArtist, list.get(0).getImage(), list.get(0).getPath(), idTrack, id);
             progressDialog.dismiss();
             Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
             getParentFragmentManager().popBackStack();
         }
     }
 
-    private void updateTrackToAllUsers(int idAlbum, String nameTrack, String nameArtist, String imageUrl, String mp3Url,String idTrack,int id) {
+    private void updateTrackToAllUsers(int idAlbum, String nameTrack, String nameArtist, String imageUrl, String mp3Url, String idTrack, int id) {
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
 
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -147,7 +147,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                     int userId = Integer.parseInt(userSnapshot.getKey());
-                    addTrackDataInDatabase(userId, idAlbum, nameTrack, nameArtist, imageUrl, mp3Url,idTrack,id);
+                    addTrackDataInDatabase(userId, idAlbum, nameTrack, nameArtist, imageUrl, mp3Url, idTrack, id);
                 }
             }
 
@@ -159,7 +159,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
         });
     }
 
-    private void addTrackDataInDatabase(int userId, int idAlbum, String name, String artists, String imageUrl, String mp3Url,String idTrack,int id) {
+    private void addTrackDataInDatabase(int userId, int idAlbum, String name, String artists, String imageUrl, String mp3Url, String idTrack, int id) {
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(userId));
         Tracks track = new Tracks();
         track.setAlbum(idAlbum);
@@ -170,7 +170,8 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
         track.setPath(mp3Url);
         track.setLike(false);
         track.setPlaycount("0");
-       userRef.child(String.valueOf(id)).setValue(track);
+        track.setBroadcasttime("");
+        userRef.child(String.valueOf(id)).setValue(track);
     }
 
 

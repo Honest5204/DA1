@@ -15,7 +15,10 @@
         app:boxBackgroundColor="@color/white"
         app:boxBackgroundMode="outline"
         app:startIconDrawable="@drawable/baseline_search_24"
-        app:startIconTint="#1E2940"
+        app:startIconTint="#000000"
+        app:boxStrokeColor="#1E2940"
+        app:boxStrokeWidth="1dp"
+        app:hintTextColor="#1E2940"
         android:hint="@string/title_search"
         android:textColorHint="#1E2940"
         android:layout_marginTop="30dp"
@@ -23,10 +26,11 @@
         app:boxCornerRadiusBottomStart="5dp"
         app:boxCornerRadiusTopEnd="5dp"
         app:boxCornerRadiusTopStart="5dp"
-        app:helperTextTextColor="@color/white">
+     >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edtEmailDN"
+            android:textColor="@color/black"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="text"

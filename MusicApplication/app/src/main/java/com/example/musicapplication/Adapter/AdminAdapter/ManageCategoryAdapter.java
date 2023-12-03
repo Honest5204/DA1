@@ -1,11 +1,14 @@
 package com.example.musicapplication.Adapter.AdminAdapter;
 
+import static com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment.TAG;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +44,7 @@ public class ManageCategoryAdapter extends RecyclerView.Adapter<ManageCategoryAd
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         var inflater = LayoutInflater.from(parent.getContext());
-        var view = inflater.inflate(com.example.musicapplication.R.layout.item_category_admin, parent, false);
+        var view = inflater.inflate(R.layout.item_category_admin, parent, false);
         return new ViewHolder(view);
     }
 
@@ -89,24 +92,10 @@ public class ManageCategoryAdapter extends RecyclerView.Adapter<ManageCategoryAd
     }
 
 
-
     private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) context).transferFragment(fragment, name);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        ItemCategoryAdminBinding binding;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            binding = ItemCategoryAdminBinding.bind(itemView);
-            itemView.setOnLongClickListener(v -> {
-                // Hiển thị dialog xác nhận xóa
-                showDeleteConfirmationDialog(getAdapterPosition());
-                return true;
-            });
-        }
-    }
     private void showDeleteConfirmationDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Xác nhận xóa");
@@ -132,5 +121,20 @@ public class ManageCategoryAdapter extends RecyclerView.Adapter<ManageCategoryAd
                 Toast.makeText(context, "Xóa album thất bại", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        ItemCategoryAdminBinding binding;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            binding = ItemCategoryAdminBinding.bind(itemView);
+            itemView.setOnLongClickListener(v -> {
+                // Hiển thị dialog xác nhận xóa
+                showDeleteConfirmationDialog(getAdapterPosition());
+                Log.d(TAG, "ViewHolder: đã ấn vào item Category");
+                return true;
+            });
+        }
     }
 }

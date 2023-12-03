@@ -33,7 +33,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,17 +52,17 @@ public class MyService extends Service {
     public static final int ACTION_REPEAT_ONE = 10;
     public static final int ACTION_REPEAT_ALL = 11;
     public static final int ACTION_LOOP = 12;
+    int userId;
     private DatabaseReference databaseReference;
+    private DatabaseReference reference;
     private DatabaseReference myRef;
     private boolean isLoopPressed = false;
-
-
     private int currentSongId = -1;
-
     private boolean isPlaying;
     private ArrayList<Usre> listUser = new ArrayList<>();
 
     private ArrayList<Tracks> msongList;
+    private ArrayList<Tracks> listSong;
     private Tracks mtracks;
 
     private MediaPlayer mediaPlayer;
@@ -123,6 +125,7 @@ public class MyService extends Service {
         super.onCreate();
         Log.e("thuc", "onCreate: my service created ");
         msongList = new ArrayList<>();
+        listSong = new ArrayList<>();
         setupSeekBarUpdate();
         LocalBroadcastManager.getInstance(this).registerReceiver(loopReceiver, new IntentFilter("loop_pressed"));
     }
@@ -137,7 +140,7 @@ public class MyService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         int songId = intent.getIntExtra("song_id", -1);
         int albumId = intent.getIntExtra("album", -1);
-        int userId = intent.getIntExtra("id_user", -1);
+        userId = intent.getIntExtra("id_user", -1);
         if (songId != -1 && albumId != -1) {
             getSongDetailsFromRealtimeDatabase(songId, albumId, userId);
         }
@@ -152,23 +155,51 @@ public class MyService extends Service {
 
 
     private void getSongDetailsFromRealtimeDatabase(final int songId, int albumId, int userId) {
-        databaseReference = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(userId));
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference referenceForUserId2 = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(2));
+        referenceForUserId2.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (msongList != null) {
-                    msongList.clear();
+                if (listSong != null) {
+                    listSong.clear();
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Tracks song = dataSnapshot.getValue(Tracks.class);
-                    assert song != null;
-                    if (song.getAlbum() == albumId) {
-                        msongList.add(song);
-                    }
-                    if (song.getId() == songId) {
-                        handleNewSongRequest(song);
-                    }
+                    Tracks msong = dataSnapshot.getValue(Tracks.class);
+                    assert msong != null;
+                    listSong.add(msong);
+                    // Lấy giá trị playcount từ track có userId là 2
+                    int playcountFromUserId2 = Integer.parseInt(msong.getPlaycount());
+                    int id = Integer.parseInt(dataSnapshot.getKey());
+                    // Thêm giá trị playcount vào track có userId tương ứng
+                    DatabaseReference referenceForCurrentUser = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(userId));
+                    referenceForCurrentUser.child(String.valueOf(id)).child("playcount").setValue(String.valueOf(playcountFromUserId2));
                 }
+
+                // Tiếp tục với phần xử lý của bạn
+                databaseReference = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(userId));
+                databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (msongList != null) {
+                            msongList.clear();
+                        }
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                            Tracks song = dataSnapshot.getValue(Tracks.class);
+                            assert song != null;
+                            if (song.getAlbum() == albumId) {
+                                msongList.add(song);
+                            }
+                            if (song.getId() == songId) {
+                                handleNewSongRequest(song,userId);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Xử lý khi có lỗi xảy ra khi truy cập Realtime Database
+                        Log.e("MyService", "Error getting song details: " + error.getMessage());
+                    }
+                });
             }
 
             @Override
@@ -179,8 +210,7 @@ public class MyService extends Service {
         });
     }
 
-
-    private void handleNewSongRequest(Tracks tracks) {
+    private void handleNewSongRequest(Tracks tracks,int userid) {
         if (mediaPlayer != null && isPlaying) {
             // Nếu có bài hát đang phát và bài hát yêu cầu giống với bài hát đang phát,
             // thì không làm gì cả
@@ -195,7 +225,7 @@ public class MyService extends Service {
 
         // Bắt đầu phát bài hát mới
         mtracks = tracks;
-        startMusic(tracks);
+        startMusic(tracks,userid);
         currentSongId = tracks.getId();
         senNotificationMedia(tracks);
     }
@@ -219,11 +249,18 @@ public class MyService extends Service {
         }
     }
 
-    private void startMusic(Tracks tracks) {
-        var databaseReference = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(listUser.get(0).getId()));
+    private void startMusic(Tracks tracks,int userid) {
+        var databaseReference = FirebaseDatabase.getInstance().getReference("tracks").child("2");
         Map<String, Object> updates = new HashMap<>();
-        updates.put("playcount", String.valueOf(tracks.getPlaycount()+1));
-        databaseReference.child(String.valueOf(tracks.getId() -1)).updateChildren(updates);
+        updates.put("playcount", String.valueOf(Integer.parseInt(tracks.getPlaycount()) + 1));
+        databaseReference.child(String.valueOf(tracks.getId() - 1)).updateChildren(updates);
+        var reference = FirebaseDatabase.getInstance().getReference("tracks").child(String.valueOf(userid));
+        Map<String, Object> update = new HashMap<>();
+        var sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        var currentDateandTime = sdf.format(new Date());
+        var release = currentDateandTime;
+        update.put("broadcasttime", release);
+        reference.child(String.valueOf(tracks.getId() - 1)).updateChildren(update);
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(tracks.getPath()));
             mediaPlayer.setOnCompletionListener(mp -> handleSongCompletion());
@@ -240,7 +277,7 @@ public class MyService extends Service {
                 sendActionToActivity(ACTION_PAUSE);
                 if (repeatState == 1) {
                     // Nếu đang lặp lại một bài hát, chơi lại bài hát hiện tại
-                    startMusic(tracks);
+                    startMusic(tracks,userid);
                 } else if (repeatState == 2) {
                     // Nếu đang lặp lại toàn bộ danh sách phát, chơi bài hát tiếp theo
                     playNextSong();
@@ -358,7 +395,7 @@ public class MyService extends Service {
                     stopCurrentSong();
 
                     // Chơi bài hát trước đó
-                    handleNewSongRequest(previousSong);
+                    handleNewSongRequest(previousSong,userId);
                 } else if (currentIndex == 0) {
                     // Nếu bài hát hiện tại là bài hát đầu tiên, có thể muốn quay lại bài hát cuối cùng
                     // Lấy thông tin chi tiết của bài hát cuối cùng từ cơ sở dữ liệu
@@ -371,7 +408,7 @@ public class MyService extends Service {
                     stopCurrentSong();
 
                     // Chơi bài hát cuối cùng
-                    handleNewSongRequest(lastSong);
+                    handleNewSongRequest(lastSong,userId);
                 }
             }
             resetLoopCount();
@@ -403,7 +440,7 @@ public class MyService extends Service {
                     stopCurrentSong();
 
                     // Chơi bài hát tiếp theo
-                    handleNewSongRequest(nextSong);
+                    handleNewSongRequest(nextSong,userId);
                 } else if (currentIndex == msongList.size() - 1) {
                     // Nếu bài hát hiện tại là bài hát cuối cùng, bạn có thể muốn lặp lại bài hát đầu tiên
                     // Lấy thông tin chi tiết của bài hát đầu tiên từ cơ sở dữ liệu
@@ -416,7 +453,7 @@ public class MyService extends Service {
                         stopCurrentSong();
 
                         // Chơi bài hát đầu tiên
-                        handleNewSongRequest(firstSong);
+                        handleNewSongRequest(firstSong,userId);
                     }
                 }
             }

@@ -16,4 +16,6 @@
     <color name="orange">#FFFFA500</color>
     <color name="purple">#FF800080</color>
     <color name="br">#B3B3B3</color>
+    <color name="toolbargreen">#13711F</color>
+    <color name="toolbarpurple">#5C113E</color>
 </resources>

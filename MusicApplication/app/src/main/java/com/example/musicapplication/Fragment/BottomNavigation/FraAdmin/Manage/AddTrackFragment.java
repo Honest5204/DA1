@@ -77,7 +77,6 @@ public class AddTrackFragment extends Fragment implements EasyPermissions.Permis
     }
 
 
-
     private boolean isNullOrEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
@@ -317,12 +316,14 @@ public class AddTrackFragment extends Fragment implements EasyPermissions.Permis
             }
         });
     }
+
     private void initToolbar() {
         var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

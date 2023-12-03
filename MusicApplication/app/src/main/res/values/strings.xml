@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MusicApplication</string>
+    <string name="app_name">MoodWaves</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_favourite">Bài hát đã thích</string>
@@ -17,4 +17,21 @@
     <string name="edit">Sửa</string>
     <string name="t_n_album">Tên album</string>
     <string name="lo_i">Loại:</string>
+    <string name="d_ng_v_nh_vi_n_premium_v_i_gi_99_000">DÙNG VĨNH VIỄN PREMIUM VỚI GIÁ 99,000₫</string>
+    <string name="emotion_premium">MOODWAVES PREMIUM</string>
+    <string name="d_ng_g_i_premium">DÙNG GÓI PREMIUM</string>
+    <string name="l_do_n_n_n_ng_c_p_l_n_premium">Lý do nên nâng cấp lên Premium</string>
+    <string name="tittle_nghenhac">Nghe nhạc không bị quảng cáo làm gián đoạn</string>
+    <string name="ch_t_l_ng_m_thanh_v_t_tr_i">Chất lượng âm thanh vượt trội</string>
+    <string name="g_i_hi_n_t_i">Gói hiện tại</string>
+    <string name="emotion_free">MoodWaves Free</string>
+    <string name="h_y_th_m_nh_bill_ch_p_v_o_y">Hãy thêm ảnh bill đã chụp vào đây</string>
+    <string name="th_i_gian_x_c_nh_n_thanh_to_n_l_1_2_ng_y">Thời gian xác nhận thanh toán là 1-2 ngày</string>
+    <string name="sau_khi_qu_t_m_qr_v_thanh_to_n_th_nh_c_ng_h_y_ch_p_l_i_bill_v_th_m_d_i_v_n_x_c_nh_n">Sau khi quét mã QR và thanh toán thành công hãy chụp lại bill và thêm ở dưới và ấn xác nhận</string>
+    <string name="vui_l_ng_qu_t_m_qr_thanh_to_n">Vui lòng quét mã QR để thanh toán</string>
+    <string name="c_b_t_k_th_c_m_c_n_o_vui_l_ng_li_n_h_v_i_ch_ng_t_i_qua_s_t_1900_1234">Có bất kì thắc mắc nào vui lòng liên hệ với chúng tôi qua SĐT: 1900 1234</string>
+    <string name="top_10_b_i_h_t_c_nghe_nhi_u_nh_t">Top 10 bài hát được nghe nhiều nhất</string>
+    <string name="history">Lịch sử</string>
+    <string name="manage">Quản lý</string>
+    <string name="listUser">Danh sách người dùng</string>
 </resources>

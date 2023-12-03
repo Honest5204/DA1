@@ -91,7 +91,6 @@ public class SignUpEmailActivity extends AppCompatActivity {
     }
     @Override
     public boolean onSupportNavigateUp() {
-//        startActivity(new Intent(Sign_Up_Email.this, Activity1.class));
         onBackPressed();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         return true;

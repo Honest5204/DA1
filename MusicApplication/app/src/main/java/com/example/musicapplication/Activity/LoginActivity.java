@@ -24,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private ProgressDialog progressDialog;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +44,10 @@ public class LoginActivity extends AppCompatActivity {
         binding.btnDangNhap.setBackgroundTintList(defaultColor);
         String checkEmail = binding.edtEmailDN.getText().toString().trim();
         String checkPassword = binding.edtPasswordDN.getText().toString().trim();
+        binding.btnQuenMatKhau.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        });
         // Kiểm tra và vô hiệu hóa nút nếu EditText trống
         if (checkEmail.isEmpty() || checkPassword.isEmpty()) {
             binding.btnDangNhap.setEnabled(false);
@@ -125,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
                                 finish();
 
                             } else {
-                                Toast.makeText(LoginActivity.this, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this, "Email hoặc mật khẩu sai", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -133,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     }
+
 
     @Override
     public boolean onSupportNavigateUp() {

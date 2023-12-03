@@ -122,7 +122,7 @@ public class AddAlbumsFragment extends Fragment implements EasyPermissions.Permi
                 imageRef.putFile(listUri.get(0)).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         imageRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                            AddAlbums(idAlbum, nameAlbums, nameArtist, downloadUrl.toString(),release);
+                            AddAlbums(idAlbum, nameAlbums, nameArtist, downloadUrl.toString(), release);
                             progressDialog.dismiss();
                             Toast.makeText(requireContext(), "Thêm albums thành công", Toast.LENGTH_SHORT).show();
                             getParentFragmentManager().popBackStack();
@@ -156,114 +156,118 @@ public class AddAlbumsFragment extends Fragment implements EasyPermissions.Permi
         userRef.child(String.valueOf(id)).setValue(albums);
     }
 
-    private void requestPermission () {
-            var strings = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
-            if (EasyPermissions.hasPermissions(requireContext(), strings)) {
-                imagePicker();
-            } else {
-                EasyPermissions.requestPermissions(this, "Cấp quyền truy cập ảnh", 100, strings);
-            }
-        }
-
-        public void imagePicker () {
-            FilePickerBuilder.getInstance()
-                    .setActivityTitle("Chọn ảnh")
-                    .setSpan(FilePickerConst.SPAN_TYPE.FOLDER_SPAN, 3)
-                    .setSpan(FilePickerConst.SPAN_TYPE.DETAIL_SPAN, 4)
-                    .setMaxCount(1)
-                    .setSelectedFiles(listUri)
-                    .setActivityTheme(R.style.CustomTheme)
-                    .pickPhoto(this);
-        }
-
-        @Override
-        public void onRequestPermissionsResult ( int requestCode, @NonNull String[] permissions,
-        @NonNull int[] grantResults){
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-        }
-
-
-        @Override
-        public void onPermissionsGranted ( int requestCode, @NonNull List<String> perms){
-            if (requestCode == 100 && perms.size() == 1) {
-                imagePicker();
-            }
-        }
-
-        @Override
-        public void onPermissionsDenied ( int requestCode, @NonNull List<String> perms){
-            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-                new AppSettingsDialog.Builder(this).build().show();
-            } else {
-                Toast.makeText(requireContext(), "Premission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-        @Override
-        public void onActivityResult ( int requestCode, int resultCode, @Nullable Intent data){
-            super.onActivityResult(requestCode, resultCode, data);
-
-            if (resultCode == Activity.RESULT_OK) {
-                if (requestCode == FilePickerConst.REQUEST_CODE_PHOTO) {
-                    listUri = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
-                    binding.imgAlbums.setImageURI(listUri.get(0));
-                }
-            }
-        }
-        private void getDataForSpinner (Spinner spinner){
-            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("category");
-            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    ArrayList<HashMap<String, Object>> listHashMap = new ArrayList<>();
-
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        Category category = dataSnapshot.getValue(Category.class);
-
-                        if (category != null) {
-                            HashMap<String, Object> hashMap = new HashMap<>();
-                            hashMap.put("id", category.getId());
-                            hashMap.put("name", category.getName());
-                            listHashMap.add(hashMap);
-                        }
-                    }
-
-                    // Tạo Adapter
-                    String[] from = new String[]{"name"};
-                    int[] to = new int[]{android.R.id.text1};
-                    SimpleAdapter simpleAdapter = new SimpleAdapter(requireContext(), listHashMap, android.R.layout.simple_list_item_1, from, to);
-
-                    // Set Adapter cho Spinner
-                    spinner.setAdapter(simpleAdapter);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    // Xử lý lỗi nếu có
-                    Log.e(TAG, "Failed to read value.", error.toException());
-                }
-            });
-        }
-        private void initToolbar () {
-            var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-            }
-        }
-        @Override
-        public boolean onOptionsItemSelected (MenuItem item){
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                requireActivity().getSupportFragmentManager().popBackStack();
-                closeMenu();
-                var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-                actionBar.setDisplayHomeAsUpEnabled(false);
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-
-        private void closeMenu () {
-            ((MenuController) requireActivity()).closeMenu();
+    private void requestPermission() {
+        var strings = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
+        if (EasyPermissions.hasPermissions(requireContext(), strings)) {
+            imagePicker();
+        } else {
+            EasyPermissions.requestPermissions(this, "Cấp quyền truy cập ảnh", 100, strings);
         }
     }
+
+    public void imagePicker() {
+        FilePickerBuilder.getInstance()
+                .setActivityTitle("Chọn ảnh")
+                .setSpan(FilePickerConst.SPAN_TYPE.FOLDER_SPAN, 3)
+                .setSpan(FilePickerConst.SPAN_TYPE.DETAIL_SPAN, 4)
+                .setMaxCount(1)
+                .setSelectedFiles(listUri)
+                .setActivityTheme(R.style.CustomTheme)
+                .pickPhoto(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if (requestCode == 100 && perms.size() == 1) {
+            imagePicker();
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            new AppSettingsDialog.Builder(this).build().show();
+        } else {
+            Toast.makeText(requireContext(), "Premission denied", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == FilePickerConst.REQUEST_CODE_PHOTO) {
+                listUri = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
+                binding.imgAlbums.setImageURI(listUri.get(0));
+            }
+        }
+    }
+
+    private void getDataForSpinner(Spinner spinner) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("category");
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                ArrayList<HashMap<String, Object>> listHashMap = new ArrayList<>();
+
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Category category = dataSnapshot.getValue(Category.class);
+
+                    if (category != null) {
+                        HashMap<String, Object> hashMap = new HashMap<>();
+                        hashMap.put("id", category.getId());
+                        hashMap.put("name", category.getName());
+                        listHashMap.add(hashMap);
+                    }
+                }
+
+                // Tạo Adapter
+                String[] from = new String[]{"name"};
+                int[] to = new int[]{android.R.id.text1};
+                SimpleAdapter simpleAdapter = new SimpleAdapter(requireContext(), listHashMap, android.R.layout.simple_list_item_1, from, to);
+
+                // Set Adapter cho Spinner
+                spinner.setAdapter(simpleAdapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi nếu có
+                Log.e(TAG, "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    private void initToolbar() {
+        var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            requireActivity().getSupportFragmentManager().popBackStack();
+            closeMenu();
+            var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void closeMenu() {
+        ((MenuController) requireActivity()).closeMenu();
+    }
+}

@@ -62,7 +62,7 @@ SearchFragment extends Fragment {
         return view;
     }
 
-    private void getIdUser(){
+    private void getIdUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return;
@@ -79,7 +79,7 @@ SearchFragment extends Fragment {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
-                    if (usre != null && usre.getEmail().equals(email)){
+                    if (usre != null && usre.getEmail().equals(email)) {
                         listUser.add(usre);
                     }
                 }
@@ -120,10 +120,12 @@ SearchFragment extends Fragment {
                         }
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                             Tracks tracks = dataSnapshot.getValue(Tracks.class);
-                            String trackNameWithoutDiacritics = StringUtils.stripAccents(tracks.getName().toLowerCase());
-                            if (trackNameWithoutDiacritics.contains(keywordWithoutDiacritics)) {
-                                list.add(tracks);
-                                Log.e("TAG", "đã thêm track:" + tracks.getId());
+                            if (tracks != null && tracks.getName() != null) {
+                                String trackNameWithoutDiacritics = StringUtils.stripAccents(tracks.getName().toLowerCase());
+                                if (trackNameWithoutDiacritics.contains(keywordWithoutDiacritics)) {
+                                    list.add(tracks);
+                                    Log.e("TAG", "đã thêm track:" + tracks.getId());
+                                }
                             }
                         }
                         binding.recyclerViewSearch.setLayoutManager(new LinearLayoutManager(requireContext()));

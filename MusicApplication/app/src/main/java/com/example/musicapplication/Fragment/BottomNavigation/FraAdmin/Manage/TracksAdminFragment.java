@@ -1,12 +1,6 @@
 package com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +8,11 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.musicapplication.Adapter.AdminAdapter.ManageTrackAdapter;
 import com.example.musicapplication.Interface.MenuController;
@@ -46,7 +45,7 @@ public class TracksAdminFragment extends Fragment {
     private Animation toBottomBgAnim;
     private ArrayList<Tracks> list;
     private ManageTrackAdapter adapter;
-    private ArrayList<Usre> listUser= new ArrayList<>();
+    private ArrayList<Usre> listUser = new ArrayList<>();
 
     public TracksAdminFragment() {
         // Required empty public constructor
@@ -71,6 +70,7 @@ public class TracksAdminFragment extends Fragment {
         getIdUser();
         return view;
     }
+
     private void moAnima() {
         binding.mainFabBtn.setOnClickListener(v -> {
             if (isExpanded) {
@@ -102,6 +102,7 @@ public class TracksAdminFragment extends Fragment {
 
         isExpanded = !isExpanded;
     }
+
     private void anhxaAnima() {
         fromBottomFabAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.from_bottom_fab);
         toBottomFabAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.to_bottom_fab);
@@ -118,9 +119,10 @@ public class TracksAdminFragment extends Fragment {
         binding.recyclerview.setAdapter(adapter);
     }
 
-    private void transferFragment(Fragment fragment,String name) {
+    private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) requireActivity()).transferFragment(fragment, name);
     }
+
     private void getListSongFromRealttimeDatabase() {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -145,7 +147,8 @@ public class TracksAdminFragment extends Fragment {
             }
         });
     }
-    private void getIdUser(){
+
+    private void getIdUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return;
@@ -162,7 +165,7 @@ public class TracksAdminFragment extends Fragment {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
-                    if (usre != null && usre.getEmail().equals(email)){
+                    if (usre != null && usre.getEmail().equals(email)) {
                         listUser.add(usre);
                     }
                 }
@@ -176,12 +179,14 @@ public class TracksAdminFragment extends Fragment {
             }
         });
     }
+
     private void initToolbar() {
         var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

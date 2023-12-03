@@ -10,11 +10,12 @@
     tools:context=".Activity.SelectActivity">
 
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_gravity="center"
+        android:layout_marginBottom="15dp"
         android:layout_marginTop="150dp"
-        android:src="@drawable/logo" />
+        android:src="@drawable/list" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -23,16 +24,16 @@
         android:layout_marginTop="10dp"
         android:text="Hàng triệu bài hát."
         android:textColor="@color/white"
-        android:textSize="30sp"
+        android:textSize="28sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Miễn phí trên Feelings."
+        android:text="Miễn phí trên MoodWaves."
         android:textColor="@color/white"
-        android:textSize="30sp"
+        android:textSize="28sp"
         android:textStyle="bold" />
 
     <com.google.android.material.button.MaterialButton

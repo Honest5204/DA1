@@ -14,12 +14,12 @@
         android:title="Thư viện" />
     <item
         android:id="@+id/premium"
-        android:icon="@drawable/baseline_contactless_24"
+        android:icon="@drawable/list"
         android:title="Premium" />
 
     <item
         android:id="@+id/goi"
-        android:icon="@drawable/baseline_contactless_24"
+        android:icon="@drawable/list"
         android:title="Gói" />
 
 </menu>

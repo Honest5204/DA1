@@ -1,15 +1,14 @@
 package com.example.musicapplication.Fragment.BottomNavigation;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.musicapplication.Adapter.ListHomeAdapter.TrackAdapter;
 import com.example.musicapplication.Model.Tracks;
@@ -31,7 +30,8 @@ public class FavouriteFragment extends Fragment {
     private FragmentFavouriteBinding binding;
     private ArrayList<Tracks> list;
     private TrackAdapter adapter;
-    private ArrayList<Usre> listUser= new ArrayList<>();
+    private ArrayList<Usre> listUser = new ArrayList<>();
+
     public FavouriteFragment() {
         // Required empty public constructor
     }
@@ -60,9 +60,9 @@ public class FavouriteFragment extends Fragment {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Tracks tracks = dataSnapshot.getValue(Tracks.class);
-                        list.add(tracks);
+                    list.add(tracks);
                 }
-                binding.txtCountTracks.setText(list.size()+" bài hát");
+                binding.txtCountTracks.setText(list.size() + " bài hát");
                 adapter.notifyDataSetChanged();
             }
 
@@ -72,13 +72,15 @@ public class FavouriteFragment extends Fragment {
             }
         });
     }
+
     private void loadData() {
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         list = new ArrayList<>();
         adapter = new TrackAdapter(requireContext(), list);
         binding.recyclerView.setAdapter(adapter);
     }
-    private void getIdUser(){
+
+    private void getIdUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return;
@@ -95,7 +97,7 @@ public class FavouriteFragment extends Fragment {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
-                    if (usre != null && usre.getEmail().equals(email)){
+                    if (usre != null && usre.getEmail().equals(email)) {
                         listUser.add(usre);
                     }
                 }

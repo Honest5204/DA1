@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,7 +21,6 @@ import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
-
 import com.example.musicapplication.databinding.FragmentTrackBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -39,7 +39,7 @@ public class TrackFragment extends Fragment {
     private FragmentTrackBinding binding;
     private ArrayList<Tracks> list;
     private TrackAdapter adapter;
-    private ArrayList<Usre> listUser= new ArrayList<>();
+    private ArrayList<Usre> listUser = new ArrayList<>();
     private boolean isExpand = true;
 
     public TrackFragment() {
@@ -53,6 +53,10 @@ public class TrackFragment extends Fragment {
         var view = inflater.inflate(R.layout.fragment_track, container, false);
         binding = FragmentTrackBinding.bind(view);
         setHasOptionsMenu(true);
+        Button btnHome = getActivity().findViewById(R.id.btnHome);
+        btnHome.setVisibility(View.GONE);
+        Button btnTop = getActivity().findViewById(R.id.btnTop);
+        btnTop.setVisibility(View.GONE);
         args = getArguments();
         var color = args.getInt("color");
         var image = args.getString("image");
@@ -82,14 +86,13 @@ public class TrackFragment extends Fragment {
     }
 
 
-
-        private void initToolbar() {
-            var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-            }
-
+    private void initToolbar() {
+        var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+    }
 
 
     public void onImageColorExtracted(int color) {
@@ -115,7 +118,7 @@ public class TrackFragment extends Fragment {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Tracks tracks = dataSnapshot.getValue(Tracks.class);
-                    if (tracks.getAlbum() == album){
+                    if (tracks.getAlbum() == album) {
                         list.add(tracks);
                     }
                 }
@@ -128,7 +131,8 @@ public class TrackFragment extends Fragment {
             }
         });
     }
-    private void getIdUser(int album){
+
+    private void getIdUser(int album) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return;
@@ -145,7 +149,7 @@ public class TrackFragment extends Fragment {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Usre usre = dataSnapshot.getValue(Usre.class);
-                    if (usre != null && usre.getEmail().equals(email)){
+                    if (usre != null && usre.getEmail().equals(email)) {
                         listUser.add(usre);
                     }
                 }
@@ -173,6 +177,10 @@ public class TrackFragment extends Fragment {
         if (id == android.R.id.home) {
             requireActivity().getSupportFragmentManager().popBackStack();
             closeMenu();
+            Button btnHome = getActivity().findViewById(R.id.btnHome);
+            btnHome.setVisibility(View.VISIBLE);
+            Button btnTop = getActivity().findViewById(R.id.btnTop);
+            btnTop.setVisibility(View.VISIBLE);
             var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
             return true;

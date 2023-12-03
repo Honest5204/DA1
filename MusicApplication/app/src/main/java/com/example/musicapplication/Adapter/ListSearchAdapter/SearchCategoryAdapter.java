@@ -1,6 +1,7 @@
 package com.example.musicapplication.Adapter.ListSearchAdapter;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraSearch.CategoryFragment;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Category;
@@ -50,7 +50,7 @@ public class SearchCategoryAdapter extends RecyclerView.Adapter<SearchCategoryAd
         // Tạo một màu ngẫu nhiên bằng cách sử dụng hàm nextInt của Random
         int color = getRandomColor();
         // Đặt màu nền cho btnCatelory
-        holder.binding.btnCatelory.setBackgroundColor(color);
+        holder.binding.btnCatelory.setBackgroundTintList(ColorStateList.valueOf(color));;
         holder.binding.btnCatelory.setOnClickListener(view -> {
             Fragment fragment = new CategoryFragment();
             Bundle bundle = new Bundle();
@@ -74,6 +74,10 @@ public class SearchCategoryAdapter extends RecyclerView.Adapter<SearchCategoryAd
         return 0;
     }
 
+    private void transferFragment(Fragment fragment, String name) {
+        ((TransFerFra) context).transferFragment(fragment, name);
+    }
+
     public static class ViewCateloryAdapter extends RecyclerView.ViewHolder {
         ItemCatelorySearchBinding binding;
 
@@ -81,9 +85,6 @@ public class SearchCategoryAdapter extends RecyclerView.Adapter<SearchCategoryAd
             super(itemView);
             binding = ItemCatelorySearchBinding.bind(itemView);
         }
-    }
-    private void transferFragment(Fragment fragment, String name) {
-        ((TransFerFra) context).transferFragment(fragment, name);
     }
 
 }

@@ -103,11 +103,11 @@ public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.Pe
                 imageRef.putFile(listUri.get(0)).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         imageRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                                        // Cập nhật thông tin vào Realtime Database
-                                        UpdateAlbums(idAlbum, idCategory,nameAlbums, nameArtist,downloadUrl.toString(),release);
-                                        progressDialog.dismiss();
-                                        Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
-                                        getParentFragmentManager().popBackStack();
+                            // Cập nhật thông tin vào Realtime Database
+                            UpdateAlbums(idAlbum, idCategory, nameAlbums, nameArtist, downloadUrl.toString(), release);
+                            progressDialog.dismiss();
+                            Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
 
                         });
                     } else {
@@ -119,7 +119,7 @@ public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.Pe
                 Toast.makeText(requireContext(), "Vui lòng nhập tên bài hát và nghệ sĩ", Toast.LENGTH_SHORT).show();
             }
         } else {
-            UpdateAlbums(idAlbum, idCategory,nameAlbums, nameArtist,list.get(0).getImage(),release);
+            UpdateAlbums(idAlbum, idCategory, nameAlbums, nameArtist, list.get(0).getImage(), release);
             progressDialog.dismiss();
             Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
             getParentFragmentManager().popBackStack();

@@ -13,6 +13,15 @@ public class Tracks implements Serializable {
     private String path;
     private boolean like;
     private String playcount;
+    private String broadcasttime;
+
+    public String getBroadcasttime() {
+        return broadcasttime;
+    }
+
+    public void setBroadcasttime(String broadcasttime) {
+        this.broadcasttime = broadcasttime;
+    }
 
     public Tracks() {
     }

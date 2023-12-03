@@ -3,19 +3,16 @@ package com.example.musicapplication.Fragment.DrawNavigation;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.R;
-
-
 import com.example.musicapplication.databinding.FragmentChangePasswordBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -52,17 +49,17 @@ public class ChangePassWordFragment extends Fragment {
         return view;
     }
 
-    private  void changePassword(){
+    private void changePassword() {
         String matKhauCu = binding.edtMkCu.getText().toString().trim();
         String matKhauMoi = binding.edtMkMoi.getText().toString().trim();
         String nhapLaiMkMoi = binding.edtNhapLaiMk.getText().toString().trim();
 
         if (matKhauCu.isEmpty() || matKhauMoi.isEmpty() || nhapLaiMkMoi.isEmpty()) {
-            Toast.makeText(requireContext(),"Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!matKhauMoi.equals(nhapLaiMkMoi)) {
-            Toast.makeText(requireContext(),"Mật khẩu mới và nhập lại mật khẩu mới không trùng nhau", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Mật khẩu mới và nhập lại mật khẩu mới không trùng nhau", Toast.LENGTH_SHORT).show();
             return;
         }
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -75,7 +72,7 @@ public class ChangePassWordFragment extends Fragment {
                     public void onComplete(@NonNull Task<Void> task) {
                         progressDialog.dismiss();
                         if (task.isSuccessful()) {
-                            Toast.makeText(requireContext(),"Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), "Đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(requireContext(), MainActivity.class);
                             startActivity(intent);
                             requireActivity().finish();

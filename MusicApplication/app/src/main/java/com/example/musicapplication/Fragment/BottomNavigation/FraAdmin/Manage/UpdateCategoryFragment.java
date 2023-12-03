@@ -1,23 +1,19 @@
 package com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage;
 
-import static androidx.core.app.NotificationCompat.getCategory;
-
 import android.app.ProgressDialog;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Category;
-import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentUpdateCategoryBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -35,10 +31,10 @@ public class UpdateCategoryFragment extends Fragment {
     Bundle args;
     private ArrayList<Category> list;
     private ProgressDialog progressDialog;
+
     public UpdateCategoryFragment() {
         // Required empty public constructor
     }
-
 
 
     @Override
@@ -112,6 +108,7 @@ public class UpdateCategoryFragment extends Fragment {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

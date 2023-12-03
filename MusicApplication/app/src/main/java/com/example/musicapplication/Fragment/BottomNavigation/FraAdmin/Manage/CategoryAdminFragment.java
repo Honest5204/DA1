@@ -1,12 +1,6 @@
 package com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,14 +9,15 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
-import com.example.musicapplication.Adapter.AdminAdapter.ManageAlbumsAdapter;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.musicapplication.Adapter.AdminAdapter.ManageCategoryAdapter;
-import com.example.musicapplication.Adapter.AdminAdapter.ManageTrackAdapter;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Interface.TransFerFra;
-import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Category;
-import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentCategoryAdminBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -47,6 +42,7 @@ public class CategoryAdminFragment extends Fragment {
     private Animation toBottomBgAnim;
     private ArrayList<Category> list;
     private ManageCategoryAdapter adapter;
+
     public CategoryAdminFragment() {
         // Required empty public constructor
     }
@@ -97,6 +93,7 @@ public class CategoryAdminFragment extends Fragment {
             }
         });
     }
+
     private void moAnima() {
         binding.mainFabBtn.setOnClickListener(v -> {
             if (isExpanded) {
@@ -128,6 +125,7 @@ public class CategoryAdminFragment extends Fragment {
 
         isExpanded = !isExpanded;
     }
+
     private void anhxaAnima() {
         fromBottomFabAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.from_bottom_fab);
         toBottomFabAnim = AnimationUtils.loadAnimation(requireContext(), R.anim.to_bottom_fab);
@@ -144,15 +142,17 @@ public class CategoryAdminFragment extends Fragment {
         binding.recyclerview.setAdapter(adapter);
     }
 
-    private void transferFragment(Fragment fragment,String name) {
+    private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) requireActivity()).transferFragment(fragment, name);
     }
+
     private void initToolbar() {
         var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();

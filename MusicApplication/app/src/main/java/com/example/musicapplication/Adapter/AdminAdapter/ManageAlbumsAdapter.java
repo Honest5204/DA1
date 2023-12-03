@@ -1,7 +1,5 @@
 package com.example.musicapplication.Adapter.AdminAdapter;
 
-import static com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment.TAG;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,7 +7,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,18 +21,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage.UpdateAlbumsFragment;
-import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage.UpdateTrackFragment;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Albums;
-import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ItemAlbumsAdminBinding;
-import com.example.musicapplication.databinding.ItemTracksAdminBinding;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -71,6 +62,7 @@ public class ManageAlbumsAdapter extends RecyclerView.Adapter<ManageAlbumsAdapte
         Glide.with(holder.itemView.getContext()).load(list.get(position).getImage()).into(holder.binding.imgalbums);
         holder.binding.btnMenu.setOnClickListener(view -> showdialog(list.get(position).getId()));
     }
+
     private void showdialog(int id) {
         final Dialog dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -82,7 +74,7 @@ public class ManageAlbumsAdapter extends RecyclerView.Adapter<ManageAlbumsAdapte
             Bundle args = new Bundle();
             args.putString("id", String.valueOf(id));
             fragment.setArguments(args);
-            transferFragment(fragment,UpdateAlbumsFragment.TAG);
+            transferFragment(fragment, UpdateAlbumsFragment.TAG);
             dialog.dismiss();
         });
         storagelayout.setOnClickListener(v -> {
@@ -104,18 +96,6 @@ public class ManageAlbumsAdapter extends RecyclerView.Adapter<ManageAlbumsAdapte
         return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        ItemAlbumsAdminBinding binding;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            binding = ItemAlbumsAdminBinding.bind(itemView);
-            itemView.setOnLongClickListener(v -> {
-                // Hiển thị dialog xác nhận xóa
-                showDeleteConfirmationDialog(getAdapterPosition());
-                return true;
-            });
-        }
-    }
     private void showDeleteConfirmationDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Xác nhận xóa");
@@ -142,7 +122,22 @@ public class ManageAlbumsAdapter extends RecyclerView.Adapter<ManageAlbumsAdapte
             }
         });
     }
+
     private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) context).transferFragment(fragment, name);
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        ItemAlbumsAdminBinding binding;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            binding = ItemAlbumsAdminBinding.bind(itemView);
+            itemView.setOnLongClickListener(v -> {
+                // Hiển thị dialog xác nhận xóa
+                showDeleteConfirmationDialog(getAdapterPosition());
+                return true;
+            });
+        }
     }
 }

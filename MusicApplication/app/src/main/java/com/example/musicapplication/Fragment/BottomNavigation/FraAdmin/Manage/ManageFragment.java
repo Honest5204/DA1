@@ -20,6 +20,7 @@ public class ManageFragment extends Fragment {
     public ManageFragment() {
         // Required empty public constructor
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -41,8 +42,8 @@ public class ManageFragment extends Fragment {
         return view;
     }
 
-    private void transferFragment(Fragment fragment,String name){
-        ((TransFerFra) requireActivity()).transferFragment(fragment,name);
+    private void transferFragment(Fragment fragment, String name) {
+        ((TransFerFra) requireActivity()).transferFragment(fragment, name);
     }
 
 }

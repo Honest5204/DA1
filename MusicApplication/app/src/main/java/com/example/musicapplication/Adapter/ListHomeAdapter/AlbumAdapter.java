@@ -19,11 +19,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Activity.MainActivity;
+import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ItemAlbumBinding;
-import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,20 +33,21 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
+public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> {
+    int color;
     private Context context;
     private ArrayList<Albums> mlist;
     private ArrayList<Albums> listNhactre = new ArrayList<>();
-    int color;
 
     public AlbumAdapter(Context context) {
         this.context = context;
     }
 
-    public void setData(List<Albums> list){
+    public void setData(List<Albums> list) {
         this.mlist = (ArrayList<Albums>) list;
         notifyDataSetChanged();
     }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -58,10 +59,10 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Albums albums = mlist.get(position);
-        if (albums == null){
+        if (albums == null) {
             return;
         }
-        getListAlbumFromRealttimeDatabase(albums.getCategory(),listNhactre);
+        getListAlbumFromRealttimeDatabase(albums.getCategory(), listNhactre);
         Glide.with(context)
                 .asBitmap()
                 .load(mlist.get(position).getImage())
@@ -92,6 +93,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
             }
         });
     }
+
     private void getListAlbumFromRealttimeDatabase(final int category, ArrayList<Albums> list) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("albums");
@@ -105,7 +107,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Albums albums = dataSnapshot.getValue(Albums.class);
                     assert albums != null;
-                    if (albums.getCategory() == category){
+                    if (albums.getCategory() == category) {
                         assert list != null;
                         list.add(albums);
                     }
@@ -118,20 +120,22 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
             }
         });
     }
+
     private void transferFragment(Fragment fragment, String name) {
         ((TransFerFra) context).transferFragment(fragment, name);
     }
 
     @Override
     public int getItemCount() {
-        if (mlist != null){
+        if (mlist != null) {
             return mlist.size();
         }
         return 0;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         ItemAlbumBinding binding;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             binding = ItemAlbumBinding.bind(itemView);
