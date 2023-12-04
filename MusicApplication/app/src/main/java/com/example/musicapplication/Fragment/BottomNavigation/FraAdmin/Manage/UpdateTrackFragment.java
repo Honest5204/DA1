@@ -25,8 +25,11 @@ import com.bumptech.glide.Glide;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Tracks;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentUpdateTrackBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -55,6 +58,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
     private ProgressDialog progressDialog;
     private ArrayList<Uri> listUriMp3 = new ArrayList<>();
     private ArrayList<Tracks> list;
+    private ArrayList<Usre> listUser;
 
     public UpdateTrackFragment() {
         // Required empty public constructor
@@ -67,6 +71,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
         binding = FragmentUpdateTrackBinding.bind(view);
         setHasOptionsMenu(true);
         list = new ArrayList<>();
+        listUser = new ArrayList<>();
         args = getArguments();
         assert args != null;
         var idTrack = args.getString("id");
@@ -77,10 +82,39 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
         binding.imgTrack.setOnClickListener(v -> requestPermission());
         getTrack(idTrack);
         binding.btnUpdate.setOnClickListener(v -> updateTrack(idTrack, id));
-        getDataForSpinner(binding.spnAlbum);
+        getIdUser();
         return view;
     }
+    private void getIdUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
 
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre != null && usre.getEmail().equals(email)) {
+                        listUser.add(usre);
+                    }
+                }
+                getDataForSpinner(binding.spnAlbum);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
     private boolean isNullOrEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
@@ -208,7 +242,7 @@ public class UpdateTrackFragment extends Fragment implements EasyPermissions.Per
     }
 
     private void getDataForSpinner(Spinner spinner) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("albums");
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("albums").child(String.valueOf(listUser.get(0).getId()));
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {

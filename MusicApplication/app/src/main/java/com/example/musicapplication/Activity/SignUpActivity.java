@@ -1,11 +1,6 @@
 package com.example.musicapplication.Activity;
 
 
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -14,6 +9,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
@@ -38,6 +38,7 @@ public class SignUpActivity extends AppCompatActivity {
     private ArrayList<Usre> list;
     private ArrayList<Usre> mlist;
     private ArrayList<Tracks> tracksList;
+    private ArrayList<Albums> albumsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,7 @@ public class SignUpActivity extends AppCompatActivity {
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         tracksList = new ArrayList<>();
+        albumsList = new ArrayList<>();
         list = new ArrayList<>();
         mlist = new ArrayList<>();
         setSupportActionBar(binding.toolbar);
@@ -88,17 +90,40 @@ public class SignUpActivity extends AppCompatActivity {
         });
         //Đăng ký
         binding.btnTaoTaiKhoan.setOnClickListener(view -> {
-             email = getIntent().getStringExtra("email");
-             password = getIntent().getStringExtra("password");
-             date = getIntent().getStringExtra("date");
-             gender = getIntent().getStringExtra("gender");
-             name = binding.edtName.getText().toString().trim();
-             dangKy();
-             addTrack();
-
+            email = getIntent().getStringExtra("email");
+            password = getIntent().getStringExtra("password");
+            date = getIntent().getStringExtra("date");
+            gender = getIntent().getStringExtra("gender");
+            name = binding.edtName.getText().toString().trim();
+            dangKy();
+            addTrack();
         });
         getIDUser();
         getListSongFromRealttimeDatabase();
+        getListAlbumFromRealttimeDatabase();
+    }
+
+    private void getListAlbumFromRealttimeDatabase() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("albums").child(String.valueOf(2));
+
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (albumsList != null) {
+                    albumsList.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Albums albums = dataSnapshot.getValue(Albums.class);
+                    albumsList.add(albums);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getApplicationContext(), "get data failed", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void getIDUser() {
@@ -114,6 +139,7 @@ public class SignUpActivity extends AppCompatActivity {
                     mlist.add(usre);
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
@@ -134,7 +160,7 @@ public class SignUpActivity extends AppCompatActivity {
                 }
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Tracks tracks = dataSnapshot.getValue(Tracks.class);
-                        tracksList.add(tracks);
+                    tracksList.add(tracks);
                 }
             }
 
@@ -148,20 +174,20 @@ public class SignUpActivity extends AppCompatActivity {
     private void addTrack() {
         int size = 0;
         int id = 0;
-        if (mlist.isEmpty()){
-           id = 1;
-        }else {
-            size = mlist.size()-1;
-            id = mlist.get(size).getId()+1;
+        if (mlist.isEmpty()) {
+            id = 1;
+        } else {
+            size = mlist.size() - 1;
+            id = mlist.get(size).getId() + 1;
         }
-
         Usre newUser = new Usre(id, date, email, gender, name, "https://firebasestorage.googleapis.com/v0/b/musicapplication-451a2.appspot.com/o/profile_images%2Favata_default.jpg?alt=media&token=7d79fd8a-61ad-486f-82c5-e006454ded34", "user");
         addData(newUser);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("tracks").child(String.valueOf(id));
+        DatabaseReference myRefs = database.getReference("albums").child(String.valueOf(id));
         myRef.setValue(tracksList);
+        myRefs.setValue(albumsList);
     }
-
 
     private void addData(Usre user) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -190,14 +216,13 @@ public class SignUpActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(SignUpActivity.this, "Đăng ký thất bại", Toast.LENGTH_SHORT).show();
-                            }
                         }
+                    }
                 });
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-//        startActivity(new Intent(Sign_Up.this, Sign_Up_Gender.class));
         onBackPressed();
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         return true;

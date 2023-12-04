@@ -22,8 +22,11 @@ import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Albums;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.ItemRandomBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +40,7 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.ViewHolder
     private Context context;
     private ArrayList<Albums> mlist;
     private ArrayList<Albums> listNhactre = new ArrayList<>();
+    private ArrayList<Usre> listUser = new ArrayList<>();
 
     public RandomAdapter(Context context, ArrayList<Albums> mlist) {
         this.context = context;
@@ -57,7 +61,7 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.ViewHolder
         if (albums == null) {
             return;
         }
-        getListAlbumFromRealttimeDatabase(albums.getCategory(), listNhactre);
+        getIdUser(albums.getCategory(), listNhactre);
         Glide.with(context)
                 .asBitmap()
                 .load(mlist.get(position).getImage())
@@ -88,10 +92,40 @@ public class RandomAdapter extends RecyclerView.Adapter<RandomAdapter.ViewHolder
             }
         });
     }
+    private void getIdUser(int category, ArrayList<Albums> list) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre != null && usre.getEmail().equals(email)) {
+                        listUser.add(usre);
+                    }
+                }
+                getListAlbumFromRealttimeDatabase(category, list);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
 
     private void getListAlbumFromRealttimeDatabase(final int category, ArrayList<Albums> list) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("albums");
+        DatabaseReference myRef = database.getReference("albums").child(String.valueOf(listUser.get(0).getId()));
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override

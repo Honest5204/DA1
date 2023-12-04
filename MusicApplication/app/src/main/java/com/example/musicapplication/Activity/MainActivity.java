@@ -39,11 +39,11 @@ import androidx.palette.graphics.Palette;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.example.musicapplication.Fragment.BottomNavigation.FavouriteFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.ConfirmFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.ListUserFragment.UserFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage.ManageFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.StatisticFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraFavorite.FavouriteFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.HomeFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TopFragment;
 import com.example.musicapplication.Fragment.BottomNavigation.FraPremium.PremiumFragment;
@@ -504,7 +504,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 btnHome.setTextColor(Color.parseColor("#000000"));
                 btnTop.setTextColor(Color.parseColor("#FFFFFF"));
                 btnTop.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
-
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
                 getWindow().setStatusBarColor(Color.parseColor("#000000"));
@@ -516,8 +515,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 menu.setVisibility(View.VISIBLE);
                 btnHome.setVisibility(View.GONE);
                 btnTop.setVisibility(View.GONE);
-                getWindow().setStatusBarColor(Color.parseColor("#000000"));
-                toolbar.setBackgroundColor(Color.parseColor("#000000"));
                 fragment = new SearchFragment();
             } else if (itemId == R.id.thuvien && !(currentFragment instanceof FavouriteFragment)) {
                 txttitleToolbar.setText("");
@@ -525,8 +522,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 btnTop.setVisibility(View.GONE);
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
-                getWindow().setStatusBarColor(Color.parseColor("#31115C"));
-                toolbar.setBackgroundColor(Color.parseColor("#31115C"));
                 fragment = new FavouriteFragment();
             } else if (itemId == R.id.premium && !(currentFragment instanceof PremiumFragment)) {
                 txttitleToolbar.setText("");
@@ -534,8 +529,6 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
                 btnTop.setVisibility(View.GONE);
                 actionBar.setDisplayHomeAsUpEnabled(false);
                 menu.setVisibility(View.VISIBLE);
-                getWindow().setStatusBarColor(Color.parseColor("#5C113E"));
-                toolbar.setBackgroundColor(Color.parseColor("#5C113E"));
                 fragment = new PremiumFragment();
             } else if (itemId == R.id.goi && !(currentFragment instanceof ConfirmFragment)) {
                 txttitleToolbar.setText("");
@@ -880,4 +873,25 @@ public class MainActivity extends AppCompatActivity implements MenuController, T
     }
 
 
+    public void addTrackFavorite(int id, int album, String name, String artists, String image, String path, String playcount, String broadcasttime, boolean like) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("trackfavorite").child(String.valueOf(listUser.get(0).getId()));
+        Tracks tracks = new Tracks();
+        tracks.setId(id);
+        tracks.setAlbum(album);
+        tracks.setName(name);
+        tracks.setArtists(artists);
+        tracks.setImage(image);
+        tracks.setPath(path);
+        tracks.setPlaycount(playcount);
+        tracks.setBroadcasttime(broadcasttime);
+        tracks.setLike(like);
+        databaseReference.child(String.valueOf(id)).setValue(tracks, (error, ref) -> {
+            if (error == null) {
+                Toast.makeText(this, "Thêm thành công", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Thêm thất bại", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
 }

@@ -1,32 +1,29 @@
-package com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage;
+package com.example.musicapplication.Fragment.BottomNavigation.FraFavorite;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SimpleAdapter;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
-import com.bumptech.glide.Glide;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Albums;
-import com.example.musicapplication.Model.Category;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
-import com.example.musicapplication.databinding.FragmentUpdateAlbumsBinding;
+import com.example.musicapplication.databinding.FragmentAddFavoriteBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -40,7 +37,6 @@ import com.google.firebase.storage.StorageReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,41 +46,64 @@ import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
 
-public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
-    public static final String TAG = UpdateAlbumsFragment.class.getName();
+public class AddFavoriteFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
+    public static final String TAG = AddFavoriteFragment.class.getName();
     ArrayList<Uri> listUri = new ArrayList<>();
-    Bundle args;
-    private FragmentUpdateAlbumsBinding binding;
+    private FragmentAddFavoriteBinding binding;
+    private ArrayList<Usre> listUser = new ArrayList<>();
     private ProgressDialog progressDialog;
-    private ArrayList<Albums> list;
-    private ArrayList<Usre> listUser;
+    private ArrayList<Albums> albumsList;
 
-
-    public UpdateAlbumsFragment() {
+    public AddFavoriteFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        var view = inflater.inflate(R.layout.fragment_update_albums, container, false);
-        binding = FragmentUpdateAlbumsBinding.bind(view);
+        var view = inflater.inflate(R.layout.fragment_add_favorite, container, false);
+        binding = FragmentAddFavoriteBinding.bind(view);
         setHasOptionsMenu(true);
-        initToolbar();
         listUser = new ArrayList<>();
-        list = new ArrayList<>();
-        args = getArguments();
-        assert args != null;
-        var idAlbum = args.getString("id");
-        getDataForSpinner(binding.spnCategory);
+        initToolbar();
+        getActivity().getWindow().setStatusBarColor(Color.parseColor("#BAAD7E"));
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbarr);
+        toolbar.setBackgroundColor(Color.parseColor("#BAAD7E"));
+        albumsList = new ArrayList<>();
         progressDialog = new ProgressDialog(requireContext());
-        binding.imgAlbums.setOnClickListener(v -> requestPermission());
-        getAlbums(idAlbum);
-        binding.btnUpdate.setOnClickListener(v -> updateAlbum(idAlbum));
+        binding.imgAlbum.setOnClickListener(v -> requestPermission());
+        binding.btnCreate.setOnClickListener(view1 -> addAlbums());
         getIdUser();
         return view;
     }
+
+    private void getListAlbumFromRealttimeDatabase() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("albums").child(String.valueOf(listUser.get(0).getId()));
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (albumsList != null) {
+                    albumsList.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Albums albums = dataSnapshot.getValue(Albums.class);
+                    albumsList.add(albums);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(requireContext(), "get data failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
     private void getIdUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -106,6 +125,7 @@ public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.Pe
                         listUser.add(usre);
                     }
                 }
+                getListAlbumFromRealttimeDatabase();
             }
 
             @Override
@@ -115,15 +135,11 @@ public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.Pe
         });
     }
 
-    private boolean isNullOrEmpty(String str) {
-        return str == null || str.trim().isEmpty();
-    }
+    private void addAlbums() {
 
-    private void updateAlbum(String idAlbum) {
-        var HMT = (HashMap<String, Object>) binding.spnCategory.getSelectedItem();
-        var idCategory = (int) HMT.get("id");
-        var nameAlbums = binding.txtNameAlbums.getText().toString().trim();
-        var nameArtist = binding.txtNameAtists.getText().toString().trim();
+        var idAlbum = 0;
+        var nameAlbums = binding.edtNameAlbum.getText().toString().trim();
+        var nameArtist = "Danh sách phát của " + listUser.get(0).getName();
         var sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         var currentDateandTime = sdf.format(new Date());
         var release = currentDateandTime;
@@ -139,79 +155,38 @@ public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.Pe
                 imageRef.putFile(listUri.get(0)).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         imageRef.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                            // Cập nhật thông tin vào Realtime Database
-                            UpdateAlbums(idAlbum, idCategory, nameAlbums, nameArtist, downloadUrl.toString(), release);
+                            AddAlbums(idAlbum, nameAlbums, nameArtist, downloadUrl.toString(), release);
                             progressDialog.dismiss();
-                            Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), "Thêm albums thành công", Toast.LENGTH_SHORT).show();
                             getParentFragmentManager().popBackStack();
-
                         });
                     } else {
                         progressDialog.dismiss();
                         Toast.makeText(requireContext(), "Lỗi khi tải ảnh lên", Toast.LENGTH_SHORT).show();
                     }
                 });
-            } else {
-                Toast.makeText(requireContext(), "Vui lòng nhập tên bài hát và nghệ sĩ", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            UpdateAlbums(idAlbum, idCategory, nameAlbums, nameArtist, list.get(0).getImage(), release);
-            progressDialog.dismiss();
-            Toast.makeText(requireContext(), "Cập nhật track thành công", Toast.LENGTH_SHORT).show();
-            getParentFragmentManager().popBackStack();
         }
     }
 
-    private void UpdateAlbums(String idAlbum, int idCategory, String nameAlbums, String nameArtist, String toString, String release) {
+    private void AddAlbums(int idAlbum, String nameAlbums, String nameArtist, String toString, String release) {
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("albums").child(String.valueOf(listUser.get(0).getId()));
+        int size = 0;
+        int id = 0;
+        if (albumsList.isEmpty()) {
+            id = 1;
+        } else {
+            size = albumsList.size() - 1;
+            id = albumsList.get(size).getId() + 1;
+        }
         Albums albums = new Albums();
-        albums.setId(Integer.parseInt(idAlbum));
+        albums.setId(id);
         albums.setArtists(nameArtist);
-        albums.setCategory(idCategory);
+        albums.setCategory(idAlbum);
         albums.setRelease(release);
         albums.setImage(toString);
         albums.setName(nameAlbums);
-        userRef.child(idAlbum).setValue(albums);
-    }
-
-
-    private void getAlbums(String idAlbum) {
-        var databaseReference = FirebaseDatabase.getInstance().getReference("albums").child(String.valueOf(listUser.get(0).getId()));
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (list.size() > 0) {
-                    list.clear();
-                }
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Albums albums = dataSnapshot.getValue(Albums.class);
-                    if (albums != null && albums.getId() == Integer.parseInt(idAlbum)) {
-                        list.add(albums);
-                    }
-                }
-                setDataCategory(list);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
-
-    private void setDataCategory(ArrayList<Albums> list) {
-        Glide.with(requireActivity()).load(list.get(0).getImage()).into(binding.imgAlbums);
-        binding.txtNameAlbums.setText(list.get(0).getName());
-        binding.txtNameAtists.setText(list.get(0).getArtists());
-        binding.spnCategory.setSelection(list.get(0).getCategory());
-    }
-
-
-    private void initToolbar() {
-        var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        userRef.child(String.valueOf(id)).setValue(albums);
     }
 
     private void requestPermission() {
@@ -265,44 +240,16 @@ public class UpdateAlbumsFragment extends Fragment implements EasyPermissions.Pe
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == FilePickerConst.REQUEST_CODE_PHOTO) {
                 listUri = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
-                binding.imgAlbums.setImageURI(listUri.get(0));
+                binding.imgAlbum.setImageURI(listUri.get(0));
             }
         }
     }
 
-    private void getDataForSpinner(Spinner spinner) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("category");
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                ArrayList<HashMap<String, Object>> listHashMap = new ArrayList<>();
-
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Category category = dataSnapshot.getValue(Category.class);
-
-                    if (category != null) {
-                        HashMap<String, Object> hashMap = new HashMap<>();
-                        hashMap.put("id", category.getId());
-                        hashMap.put("name", category.getName());
-                        listHashMap.add(hashMap);
-                    }
-                }
-
-                // Tạo Adapter
-                String[] from = new String[]{"name"};
-                int[] to = new int[]{android.R.id.text1};
-                SimpleAdapter simpleAdapter = new SimpleAdapter(requireContext(), listHashMap, android.R.layout.simple_list_item_1, from, to);
-
-                // Set Adapter cho Spinner
-                spinner.setAdapter(simpleAdapter);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý lỗi nếu có
-                Log.e(TAG, "Failed to read value.", error.toException());
-            }
-        });
+    private void initToolbar() {
+        var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override

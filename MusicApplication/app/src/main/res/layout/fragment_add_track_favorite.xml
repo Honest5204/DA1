@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginHorizontal="15dp"
+    android:orientation="vertical"
+    tools:context=".Fragment.BottomNavigation.FraFavorite.AddTrackFavoriteFragment">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxBackgroundColor="@color/white"
+        app:boxBackgroundMode="outline"
+        app:startIconDrawable="@drawable/baseline_search_24"
+        app:startIconTint="#000000"
+        app:boxStrokeColor="#1E2940"
+        app:boxStrokeWidth="1dp"
+        app:hintTextColor="#1E2940"
+        android:hint="Tìm kiếm"
+        android:textColorHint="#1E2940"
+        android:layout_marginTop="30dp"
+        app:boxCornerRadiusBottomEnd="5dp"
+        app:boxCornerRadiusBottomStart="5dp"
+        app:boxCornerRadiusTopEnd="5dp"
+        app:boxCornerRadiusTopStart="5dp"
+        >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtEmailDN"
+            android:textColor="@color/black"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="text"
+            android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:id="@+id/txtTitleSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tất cả bài hát"
+        android:layout_marginBottom="20dp"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>

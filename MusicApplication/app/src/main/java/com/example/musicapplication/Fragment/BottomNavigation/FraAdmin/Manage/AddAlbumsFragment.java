@@ -23,8 +23,11 @@ import androidx.fragment.app.Fragment;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Category;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentAddAlbumsBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -52,6 +55,7 @@ public class AddAlbumsFragment extends Fragment implements EasyPermissions.Permi
     private FragmentAddAlbumsBinding binding;
     private ProgressDialog progressDialog;
     private ArrayList<Albums> albumsList;
+    private ArrayList<Usre> listUser;
 
     public AddAlbumsFragment() {
         // Required empty public constructor
@@ -64,14 +68,45 @@ public class AddAlbumsFragment extends Fragment implements EasyPermissions.Permi
         var view = inflater.inflate(R.layout.fragment_add_albums, container, false);
         binding = FragmentAddAlbumsBinding.bind(view);
         setHasOptionsMenu(true);
+        listUser = new ArrayList<>();
         initToolbar();
         albumsList = new ArrayList<>();
         progressDialog = new ProgressDialog(requireContext());
         binding.imgAlbums.setOnClickListener(v -> requestPermission());
         getDataForSpinner(binding.spnCategory);
         binding.btnThem.setOnClickListener(view1 -> addAlbums());
-        getListAlbumFromRealttimeDatabase();
+        getIdUser();
         return view;
+    }
+    private void getIdUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre != null && usre.getEmail().equals(email)) {
+                        listUser.add(usre);
+                    }
+                }
+                getListAlbumFromRealttimeDatabase();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getListAlbumFromRealttimeDatabase() {
@@ -102,7 +137,6 @@ public class AddAlbumsFragment extends Fragment implements EasyPermissions.Permi
     }
 
     private void addAlbums() {
-
         var HMT = (HashMap<String, Object>) binding.spnCategory.getSelectedItem();
         var idAlbum = (int) HMT.get("id");
         var nameAlbums = binding.txtNameAlbums.getText().toString().trim();
@@ -137,7 +171,7 @@ public class AddAlbumsFragment extends Fragment implements EasyPermissions.Permi
     }
 
     private void AddAlbums(int idAlbum, String nameAlbums, String nameArtist, String toString, String release) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("albums");
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("albums").child(String.valueOf(listUser.get(0).getId()));
         int size = 0;
         int id = 0;
         if (albumsList.isEmpty()) {

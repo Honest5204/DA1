@@ -1,4 +1,4 @@
-package com.example.musicapplication.Adapter.ListHomeAdapter;
+package com.example.musicapplication.Adapter.FavoriteAdapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -19,12 +19,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.musicapplication.Activity.MainActivity;
-import com.example.musicapplication.Fragment.BottomNavigation.FraHome.TrackFragment;
+import com.example.musicapplication.Fragment.BottomNavigation.FraFavorite.FavoriteTrackFragment;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
-import com.example.musicapplication.databinding.ItemAlbumBinding;
+import com.example.musicapplication.databinding.ItemFavoriteAlbumsBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -34,29 +34,24 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> {
+public class AlbumFavoriteAdapter extends RecyclerView.Adapter<AlbumFavoriteAdapter.ViewHolder> {
     int color;
     private Context context;
     private ArrayList<Albums> mlist;
     private ArrayList<Albums> listNhactre = new ArrayList<>();
     private ArrayList<Usre> listUser = new ArrayList<>();
 
-    public AlbumAdapter(Context context) {
+    public AlbumFavoriteAdapter(Context context, ArrayList<Albums> mlist) {
         this.context = context;
-    }
-
-    public void setData(List<Albums> list) {
-        this.mlist = (ArrayList<Albums>) list;
-        notifyDataSetChanged();
+        this.mlist = mlist;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         var inflater = LayoutInflater.from(parent.getContext());
-        var view = inflater.inflate(R.layout.item_album, parent, false);
+        var view = inflater.inflate(R.layout.item_favorite_albums, parent, false);
         return new ViewHolder(view);
     }
 
@@ -82,16 +77,17 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
                         });
                     }
                 });
-        holder.binding.txtSingerSong.setText(albums.getName());
-        Glide.with(holder.itemView.getContext()).load(mlist.get(position).getImage()).into(holder.binding.imgAlbum);
+
+        holder.binding.txtTitleSong.setText(albums.getName());
+        holder.binding.txtCountSong.setText(albums.getArtists());
+        Glide.with(holder.itemView.getContext()).load(mlist.get(position).getImage()).into(holder.binding.imgImageAlbum);
         holder.binding.itemAlbum.setOnClickListener(v -> {
-            Fragment fragment = new TrackFragment();
+            Fragment fragment = new FavoriteTrackFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("color", color);
             bundle.putString("image", mlist.get(position).getImage());
-            bundle.putInt("album", mlist.get(position).getId());
             fragment.setArguments(bundle);
-            transferFragment(fragment, TrackFragment.TAG);
+            transferFragment(fragment, FavoriteTrackFragment.TAG);
             if (context instanceof MainActivity) {
                 ((MainActivity) context).getNameCatelory(listNhactre.get(0).getName());
             }
@@ -127,7 +123,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
             }
         });
     }
-
     private void getListAlbumFromRealttimeDatabase(final int category, ArrayList<Albums> list) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("albums").child(String.valueOf(listUser.get(0).getId()));
@@ -168,11 +163,11 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ItemAlbumBinding binding;
+        ItemFavoriteAlbumsBinding binding;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            binding = ItemAlbumBinding.bind(itemView);
+            binding = ItemFavoriteAlbumsBinding.bind(itemView);
         }
     }
 }

@@ -18,8 +18,11 @@ import com.example.musicapplication.Adapter.AdminAdapter.ManageAlbumsAdapter;
 import com.example.musicapplication.Interface.MenuController;
 import com.example.musicapplication.Interface.TransFerFra;
 import com.example.musicapplication.Model.Albums;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentAlbumsAdminBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,6 +44,7 @@ public class AlbumsAdminFragment extends Fragment {
     private Animation fromBottomBgAnim;
     private Animation toBottomBgAnim;
     private ArrayList<Albums> list;
+    private ArrayList<Usre> listUser;
     private ManageAlbumsAdapter adapter;
 
     public AlbumsAdminFragment() {
@@ -53,6 +57,7 @@ public class AlbumsAdminFragment extends Fragment {
         var view = inflater.inflate(R.layout.fragment_albums_admin, container, false);
         binding = FragmentAlbumsAdminBinding.bind(view);
         setHasOptionsMenu(true);
+        listUser = new ArrayList<>();
         var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(false);
         initToolbar();
@@ -65,15 +70,45 @@ public class AlbumsAdminFragment extends Fragment {
         binding.btnStorage.setOnClickListener(v -> {
 //            transferFragment(new ,.TAG);
         });
-        getListSongFromRealttimeDatabase();
+        getIdUser();
         return view;
 
+    }
+    private void getIdUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre != null && usre.getEmail().equals(email)) {
+                        listUser.add(usre);
+                    }
+                }
+                getListSongFromRealttimeDatabase();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void getListSongFromRealttimeDatabase() {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("albums");
+        DatabaseReference myRef = database.getReference("albums").child(String.valueOf(listUser.get(0).getId()));
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override

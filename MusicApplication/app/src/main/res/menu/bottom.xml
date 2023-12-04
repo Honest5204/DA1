@@ -21,5 +21,4 @@
         android:id="@+id/goi"
         android:icon="@drawable/list"
         android:title="Gói" />
-
 </menu>

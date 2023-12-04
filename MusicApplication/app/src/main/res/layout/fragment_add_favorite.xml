@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/bgr_add_favorite"
+    android:padding="20dp"
+    tools:context=".Fragment.BottomNavigation.FraFavorite.AddFavoriteFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đặt tên cho danh sách phát của bạn"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/edtNameAlbum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:text="Chọn ảnh cho danh sách phát của bạn"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="20dp"
+        android:background="@color/white">
+
+        <ImageView
+            android:id="@+id/imgAlbum"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_margin="2dp"
+            android:background="@color/black" />
+    </LinearLayout>
+<Button
+    android:id="@+id/btnCreate"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Tạo"
+    android:backgroundTint="@color/green"/>
+</LinearLayout>

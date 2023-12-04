@@ -1,5 +1,6 @@
 package com.example.musicapplication.Fragment.BottomNavigation.FraSearch;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -52,6 +54,9 @@ SearchFragment extends Fragment {
                              Bundle savedInstanceState) {
         var view = inflater.inflate(R.layout.fragment_search, container, false);
         binding = FragmentSearchBinding.bind(view);
+        getActivity().getWindow().setStatusBarColor(Color.parseColor("#000000"));
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbarr);
+        toolbar.setBackgroundColor(Color.parseColor("#000000"));
         listUser = new ArrayList<>();
         adapter = new SearchCategoryAdapter(requireContext());
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 2);

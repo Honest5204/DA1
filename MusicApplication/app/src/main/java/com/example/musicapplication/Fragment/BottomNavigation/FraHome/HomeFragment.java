@@ -18,8 +18,11 @@ import com.example.musicapplication.Adapter.ListHomeAdapter.TopAdapter;
 import com.example.musicapplication.Model.Albums;
 import com.example.musicapplication.Model.Category;
 import com.example.musicapplication.Model.Tracks;
+import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
 import com.example.musicapplication.databinding.FragmentHomeBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,6 +42,7 @@ public class HomeFragment extends Fragment {
 
     private RandomAdapter randomAdapter;
     private List<Category> categories = new ArrayList<>();
+    private ArrayList<Usre> listUser;
 
     public HomeFragment() {
     }
@@ -47,17 +51,14 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         binding = FragmentHomeBinding.bind(view);
-
+        listUser = new ArrayList<>();
         mlist = new ArrayList<>();
         loadDataAlbum();
         adapter = new CategoryAdapter(requireContext());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
         binding.recyclerView.setLayoutManager(linearLayoutManager);
         binding.recyclerView.setAdapter(adapter);
-
-        getListCategoryWithAlbumsFromRealtimeDatabase();
-
-        getListAlbumFromRealttimeDatabase();
+        getIdUser();
         return view;
     }
 
@@ -67,10 +68,41 @@ public class HomeFragment extends Fragment {
         randomAdapter = new RandomAdapter(requireContext(), mlist);
         binding.recyclerviewRanDom.setAdapter(randomAdapter);
     }
+    private void getIdUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        String email = user.getEmail();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("users");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (listUser != null) {
+                    listUser.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Usre usre = dataSnapshot.getValue(Usre.class);
+                    if (usre != null && usre.getEmail().equals(email)) {
+                        listUser.add(usre);
+                    }
+                }
+                getListCategoryWithAlbumsFromRealtimeDatabase();
+                getListAlbumFromRealttimeDatabase();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
 
     private void getListAlbumFromRealttimeDatabase() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("albums");
+        DatabaseReference myRef = database.getReference("albums").child(String.valueOf(listUser.get(0).getId()));
 
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -161,15 +193,14 @@ public class HomeFragment extends Fragment {
 
                     // Lấy danh sách album từ bảng "albums" dựa trên id của category
                     ArrayList<Albums> albumList = new ArrayList<>();
-                    databaseRef.child("albums").orderByChild("category").equalTo(categoryId)
+                    databaseRef.child("albums").child(String.valueOf(listUser.get(0).getId())).orderByChild("category").equalTo(categoryId)
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot albumSnapshot) {
                                     for (DataSnapshot albumDataSnapshot : albumSnapshot.getChildren()) {
                                         Albums album = albumDataSnapshot.getValue(Albums.class);
                                         if (album != null) {
-                                            albumList.add(album);
-                                            Log.d("homefragment", "onDataChange: ");
+                                                albumList.add(album);
                                         }
                                     }
                                     // Tạo đối tượng CategoryWithAlbums và thêm vào danh sách

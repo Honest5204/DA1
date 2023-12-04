@@ -1,4 +1,4 @@
-package com.example.musicapplication.Fragment.BottomNavigation.FraSearch;
+package com.example.musicapplication.Fragment.BottomNavigation.FraFavorite;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,12 +12,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.musicapplication.Adapter.ListHomeAdapter.AlbumAdapter;
+import com.example.musicapplication.Adapter.ListHomeAdapter.TrackAdapter;
+import com.example.musicapplication.Fragment.BottomNavigation.FraAdmin.Manage.TracksAdminFragment;
 import com.example.musicapplication.Interface.MenuController;
-import com.example.musicapplication.Model.Albums;
+import com.example.musicapplication.Model.Tracks;
 import com.example.musicapplication.Model.Usre;
 import com.example.musicapplication.R;
-import com.example.musicapplication.databinding.FragmentCategoryBinding;
+import com.example.musicapplication.databinding.FragmentTrackFavoriteBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,36 +29,62 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+public class TrackFavoriteFragment extends Fragment {
+    public static final String TAG = TrackFavoriteFragment.class.getName();
+    private FragmentTrackFavoriteBinding binding;
+    private ArrayList<Tracks> list;
+    private TrackAdapter adapter;
+    private ArrayList<Usre> listUser = new ArrayList<>();
 
-public class CategoryFragment extends Fragment {
-    public static final String TAG = CategoryFragment.class.getName();
-    Bundle args;
-    private FragmentCategoryBinding binding;
-    private ArrayList<Albums> listNhactre = new ArrayList<>();
-    private AlbumAdapter adapter;
-    private ArrayList<Usre> listUser;
-
-    public CategoryFragment() {
+    public TrackFavoriteFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        var view = inflater.inflate(R.layout.fragment_category, container, false);
-        binding = FragmentCategoryBinding.bind(view);
+        var view = inflater.inflate(R.layout.fragment_track_favorite, container, false);
+        binding = FragmentTrackFavoriteBinding.bind(view);
         setHasOptionsMenu(true);
-        listUser = new ArrayList<>();
-        args = getArguments();
-        assert args != null;
-        var id = args.getInt("id_category");
         initToolbar();
         loadData();
-        getIdUser(id, listNhactre);
+        getIdUser();
         return view;
     }
-    private void getIdUser(int id, ArrayList<Albums> list) {
+    private void getListSongFromRealttimeDatabase() {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("favorites").child(String.valueOf(listUser.get(0).getId()));
+
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (list != null) {
+                    list.clear();
+                }
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Tracks tracks = dataSnapshot.getValue(Tracks.class);
+                    list.add(tracks);
+                }
+                binding.txtCountTracks.setText(list.size() + " bài hát");
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(requireContext(), "get data failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadData() {
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        list = new ArrayList<>();
+        adapter = new TrackAdapter(requireContext(), list);
+        binding.recyclerView.setAdapter(adapter);
+    }
+
+    private void getIdUser() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return;
@@ -78,7 +105,9 @@ public class CategoryFragment extends Fragment {
                         listUser.add(usre);
                     }
                 }
-                getListAlbumFromRealttimeDatabase(id, list);
+
+                // Sau khi lấy dữ liệu người dùng, gọi hàm để lấy danh sách bài hát
+                getListSongFromRealttimeDatabase();
             }
 
             @Override
@@ -87,48 +116,11 @@ public class CategoryFragment extends Fragment {
             }
         });
     }
-
-    private void loadData() {
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
-        binding.recyclerviewCategory.setLayoutManager(linearLayoutManager);
-        adapter = new AlbumAdapter(requireContext());
-        adapter.setData(listNhactre);
-        binding.recyclerviewCategory.setAdapter(adapter);
-    }
-
-    private void getListAlbumFromRealttimeDatabase(final int category, ArrayList<Albums> mlist) {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("albums").child(String.valueOf(listUser.get(0).getId()));
-
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (mlist != null) {
-                    mlist.clear();
-                }
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Albums albums = dataSnapshot.getValue(Albums.class);
-                    assert albums != null;
-                    if (albums.getCategory() == category) {
-                        mlist.add(albums);
-                    }
-                }
-                adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(requireContext(), "get data failed", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     private void initToolbar() {
         var actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
     }
 
     @Override
